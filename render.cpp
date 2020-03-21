@@ -6,7 +6,7 @@ IMGUI_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wPa
 
 int ActorCount = 0;
 uintptr_t UworldAddress = 0;
-vector<ULONGLONG> PlayerPawns;
+int Pawns = 0;
 char* PlayerName = (char*)"Nothing";
 int pwnId = 0;
 static float width = 0;
@@ -70,7 +70,7 @@ namespace Render {
 			if (!settings.Debug) {
 				ImGui::Text(XorStr("Actor Count -> %lu\n").c_str(), ActorCount);
 				ImGui::Text(XorStr("Pitch -> %f\n").c_str(), Pitch);
-				ImGui::Text(XorStr("Pawns -> %lu\n").c_str(), PlayerPawns.size());
+				ImGui::Text(XorStr("Pawns -> %lu\n").c_str(), Pawns);
 				ImGui::Text(XorStr("PawnID -> %lu\n").c_str(), pwnId);
 				char buffer[40] = { 0 };
 				sprintf_s(buffer, "%llx\n", UworldAddress);
@@ -195,7 +195,7 @@ namespace Render {
 			auto AcknowledgedPawn = ReadPtr(localPlayerController, Offsets::Engine::PlayerController::AcknowledgedPawn);
 			if (!valid_pointer((void*)AcknowledgedPawn)) break;
 
-			PlayerPawns.clear();
+			Pawns = 0;
 			auto ActorList = ReadPtr(PersistentLevel, Offsets::Engine::Level::AActors);
 
 			if (!valid_pointer((void*)ActorList)) break;
@@ -213,31 +213,32 @@ namespace Render {
 						Utils::decrypt_name(ActorId, buffer, 64);
 					}
 
-					if (strstr(buffer, "PlayerPawn_Athena_C") || strstr(buffer, "PlayerPawn_Athena_Phoebe_C") || strstr(buffer, "PlayerPawn_French")) {
-						PlayerPawns.push_back(Actor);
+					if (strstr(buffer, "PlayerPawn_Athena_C") || 
+						strstr(buffer, "PlayerPawn_Athena_Phoebe_C") || 
+						strstr(buffer, "PlayerPawn_French")) {
+						auto RootComp = ReadPtr(Actor, Offsets::Engine::Actor::RootComponent);
+						if (!valid_pointer(RootComp)) continue;
+						FVector pawnPosition = *(FVector*)(RootComp + Offsets::Engine::SceneComponent::RelativeLocation);
+
+						FVector pawnPosition2;
+						if (!Utils::GetBoneMatrix(Actor, 66, &pawnPosition2))
+							continue;
+
+						if (settings.ESP.Players) {
+							FVector2D worldPawnPos = Utils::WorldToScreen(pawnPosition, myinfo);
+							window.DrawList->AddText(ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }),
+								to_string(pawnPosition2.z).c_str());
+						}
+						Pawns++;
 					}
 				}
 			}
 
 			if (settings.PlayersAround) {
 				char EnemiesBuffer[20];
-				sprintf_s(EnemiesBuffer, XorStr("Enemies: %u").c_str(), PlayerPawns.size());
+				sprintf_s(EnemiesBuffer, XorStr("Enemies: %u").c_str(), Pawns);
 				window.DrawList->AddText(ImVec2(width / 2, 100), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }), EnemiesBuffer);
 			}
-
-			for (auto pawn : PlayerPawns)
-			{
-				auto RootComp = ReadPtr(pawn, Offsets::Engine::Actor::RootComponent);
-				if (!valid_pointer(RootComp)) continue;
-				FVector pawnPosition = *(FVector*)(RootComp + Offsets::Engine::SceneComponent::RelativeLocation);
-
-				if (settings.ESP.Players) {
-					FVector2D worldPawnPos = Utils::WorldToScreen(pawnPosition, myinfo);
-					window.DrawList->AddText(ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }), 
-						XorStr("[Player]").c_str());
-				}
-			}
-
 		} while (FALSE);
 
 		Render::EndScene(window);

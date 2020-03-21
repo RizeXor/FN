@@ -7,6 +7,9 @@ namespace Offsets {
 	extern DWORD FnFree;
 	extern DWORD GetObjectName;
 	extern DWORD CameraDecrypt;
+	extern DWORD UObject;
+	extern DWORD DecryptFunc;
+	extern DWORD GetBoneMatrix;
 
 	namespace Engine {
 
@@ -34,6 +37,7 @@ namespace Offsets {
 
 		namespace Pawn {
 			extern DWORD PlayerState;
+			extern DWORD SkeletalMeshComponent;
 		}
 
 		namespace PlayerState {
@@ -44,22 +48,9 @@ namespace Offsets {
 			extern DWORD RootComponent;
 		}
 
-		namespace Character {
-			extern DWORD Mesh;
-		}
-
 		namespace SceneComponent {
 			extern DWORD RelativeLocation;
 			extern DWORD ComponentVelocity;
-		}
-
-		namespace StaticMeshComponent {
-			extern DWORD ComponentToWorld;
-			extern DWORD StaticMesh;
-		}
-
-		namespace SkinnedMeshComponent {
-			extern DWORD CachedWorldSpaceBounds;
 		}
 	}
 

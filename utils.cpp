@@ -2,7 +2,7 @@
 
 #include <Psapi.h>
 
-FMatrix (*GetBoneMatrix)(int BoneIndex) = nullptr;
+ULONGLONG GetBoneMatrixAddress = 0;
 
 namespace Utils {
 	void decrypt_name(uint64_t id, char* outbuf, int outbuf_size)
@@ -19,7 +19,7 @@ namespace Utils {
 
 		v6 = id >> 16;
 
-		GObjects = (unsigned __int64*)(game_base + 0x7EA8840);
+		GObjects = (unsigned __int64*)(game_base + Offsets::UObject);
 		//v12 Get FNameEntry?
 		v12 = (unsigned short*)(GObjects[(unsigned int)v6 + 2] + (unsigned int)(2 * v20));
 
@@ -32,7 +32,7 @@ namespace Utils {
 
 			memcpy(outbuf, v12 + 1, str_size);
 
-			void* (__fastcall * decrypt_func)(void*, int) = (void* (__fastcall*)(void*, int))(game_base + 0x1FD26B0);
+			void* (__fastcall * decrypt_func)(void*, int) = (void* (__fastcall*)(void*, int))(game_base + Offsets::DecryptFunc);
 
 			decrypt_func((void*)outbuf, str_size);
 
@@ -197,17 +197,41 @@ namespace Utils {
 		return Screenlocation;
 	}
 
+	BOOL GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out) {
+		ULONGLONG ActorMesh = 0;
+		FMatrix matrix;
+		FMatrix* tmp = nullptr;
+
+		ActorMesh = *(ULONGLONG*)(Actor + Offsets::Engine::Pawn::SkeletalMeshComponent);
+		if (!valid_pointer((void*)ActorMesh)) {
+			return FALSE;
+		}
+
+		FMatrix* (__fastcall * func)(void*, void*, int) = (FMatrix * (__fastcall *)(void*, void*, int))GetBoneMatrixAddress;
+		tmp = func((void*)ActorMesh, (void*)&matrix, index);
+
+		Out->x = matrix.WPlane.x;
+		Out->y = matrix.WPlane.y;
+		Out->z = matrix.WPlane.z;
+
+		return TRUE;
+	}
+
 	BOOLEAN Initialize()
 	{
 		// CreateConsole();
 
 		ULONGLONG Base = (ULONGLONG)GetModuleHandleA(nullptr);
+		GetBoneMatrixAddress = (Base + 0x3F968A0);
 
-		auto addr = FindPattern(XorStr("\x48\x8D\x54\x24\x00\x48\x8B\xC4\x55").c_str(), XorStr("xxxx?xxxx").c_str());
-		if (!addr) {
+		/*GetBoneMatrixAddress = (ULONGLONG)FindPattern(
+			XorStr("\x48\x8B\xC4\x55\x53\x56\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x0F\x29\x78\xB8\x33\xF6").c_str(), 
+			XorStr("xxxxxxxxxxxxxxxxxxxxx???xxxxxx").c_str());*/
+
+		/*if (!GetBoneMatrixAddress) {
 			MessageBox(0, XorStr(L"Failed to find bone matrix").c_str(), XorStr(L"dsfsdfsdf").c_str(), 0);
 			return FALSE;
-		}
+		}*/
 
 		return TRUE;
 	}

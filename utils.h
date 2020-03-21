@@ -20,6 +20,7 @@ namespace Utils {
 	/*VOID ToMatrixWithScale(float* in, float out[4][4]);
 	VOID GetBoneLocation(float compMatrix[4][4], PVOID bones, DWORD index, float out[3]);
 	VOID CalcAngle(float* src, float* dst, float* angles);*/
+	BOOL GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out);
 	FVector2D WorldToScreen(FVector Location, FMinimalViewInfo info);
 
 	PBYTE FindPattern(LPCSTR pattern, LPCSTR mask);

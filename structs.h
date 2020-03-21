@@ -118,7 +118,11 @@ struct FVector
 {
 	float x, y, z;
 
-	FVector() {}
+	FVector() {
+		this->x = 0.0f;
+		this->y = 0.0f;
+		this->z = 0.0f;
+	}
 
 	FVector(float x, float y, float z)
 	{
@@ -170,9 +174,21 @@ struct FMinimalViewInfo
 	char _pad01[2000];
 };
 
-typedef struct {
-	float M[4][4];
-} FMatrix;
+struct FPlane
+{
+	float x;
+	float y;
+	float z;
+	float w;
+};
+
+struct FMatrix
+{
+	struct FPlane XPlane;
+	struct FPlane YPlane;
+	struct FPlane ZPlane;
+	struct FPlane WPlane;
+};
 
 typedef struct {
 	FVector ViewOrigin;

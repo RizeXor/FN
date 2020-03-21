@@ -5,6 +5,9 @@ namespace Offsets {
 	DWORD FnFree = 0x2A6E690;
 	DWORD GetObjectName = 0x4114180;
 	DWORD CameraDecrypt = 0x660;
+	DWORD UObject = 0x7EA8840;
+	DWORD DecryptFunc = 0x1FD26B0;
+	DWORD GetBoneMatrix = 0x3F968A0;
 
 	namespace Engine {
 
@@ -32,6 +35,7 @@ namespace Offsets {
 
 		namespace Pawn {
 			DWORD PlayerState = 0;
+			DWORD SkeletalMeshComponent = 0;
 		}
 
 		namespace PlayerState {
@@ -50,15 +54,6 @@ namespace Offsets {
 			DWORD RelativeLocation = 0;
 			DWORD ComponentVelocity = 0;
 		}
-
-		namespace StaticMeshComponent {
-			DWORD ComponentToWorld = 0x1C0;
-			DWORD StaticMesh = 0;
-		}
-
-		namespace SkinnedMeshComponent {
-			DWORD CachedWorldSpaceBounds = 0;
-		}
 	}
 
 	BOOLEAN Initialize()
@@ -72,16 +67,23 @@ namespace Offsets {
 		uWorld = reinterpret_cast<decltype(uWorld)>(RELATIVE_ADDR(addr, 7));
 
 		Engine::World::OwningGameInstance = 0x188;
+
 		Engine::GameInstance::LocalPlayers = 0x38;
+
 		Engine::Level::AActors = 0x98;
 
 		Engine::PlayerController::AcknowledgedPawn = 0x298;
 		Engine::PlayerController::PlayerCameraManager = 0x2B0;
 
 		Engine::Player::PlayerController = 0x30;
+
 		Engine::Actor::RootComponent = 0x130;
+
 		Engine::World::Levels = 0x148;
+
 		Engine::SceneComponent::RelativeLocation = 0x11C;
+
+		Engine::Pawn::SkeletalMeshComponent = 0x278;
 
 		return TRUE;
 	}
