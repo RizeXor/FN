@@ -4,6 +4,7 @@ namespace Offsets {
 	PVOID* uWorld = 0;
 	DWORD FnFree = 0x2A6E690;
 	DWORD GetObjectName = 0x4114180;
+	DWORD CameraDecrypt = 0x660;
 
 	namespace Engine {
 
@@ -26,7 +27,7 @@ namespace Offsets {
 
 		namespace PlayerController {
 			DWORD AcknowledgedPawn = 0;
-			DWORD PlayerCameraManager = 0;
+			DWORD PlayerCameraManager = 0x2B0;
 		}
 
 		namespace Pawn {

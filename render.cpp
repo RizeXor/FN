@@ -12,7 +12,8 @@ int pwnId = 0;
 static float width = 0;
 static float height = 0;
 static HWND hWnd = 0;
-vector<FVector> PawnLocations;
+float Pitch = 0;
+FMinimalViewInfo myinfo;
 
 namespace Render {
 	BOOLEAN showMenu = FALSE;
@@ -68,6 +69,7 @@ namespace Render {
 			ImGui::Text(XorStr("Debug:").c_str());
 			if (!settings.Debug) {
 				ImGui::Text(XorStr("Actor Count -> %lu\n").c_str(), ActorCount);
+				ImGui::Text(XorStr("Pitch -> %f\n").c_str(), Pitch);
 				ImGui::Text(XorStr("Pawns -> %lu\n").c_str(), PlayerPawns.size());
 				ImGui::Text(XorStr("PawnID -> %lu\n").c_str(), pwnId);
 				char buffer[40] = { 0 };
@@ -177,9 +179,22 @@ namespace Render {
 			auto localPlayerController = ReadPtr(localPlayer, Offsets::Engine::Player::PlayerController);
 			if (!valid_pointer((void*)localPlayerController)) break;
 
+			auto PlayerCameraManager = ReadPtr(localPlayerController, Offsets::Engine::PlayerController::PlayerCameraManager);
+			if (!valid_pointer((void*)PlayerCameraManager)) break;
+
+			auto PlayerCameraManagerVTable = *(ULONGLONG*)(PlayerCameraManager);
+			if (!valid_pointer((void*)PlayerCameraManagerVTable)) break;
+
+			uint64_t(__fastcall * func)(uint64_t, FMinimalViewInfo*) = 
+				(*(uint64_t(__fastcall*)(uint64_t, FMinimalViewInfo*))(*(uint64_t*)(PlayerCameraManagerVTable + 0x660)));
+
+			Utils::SpoofCall(func, (uint64_t)PlayerCameraManager, &myinfo);
+
+			Pitch = myinfo.Rotation.pitch;
+			
 			auto AcknowledgedPawn = ReadPtr(localPlayerController, Offsets::Engine::PlayerController::AcknowledgedPawn);
 			if (!valid_pointer((void*)AcknowledgedPawn)) break;
-			
+
 			PlayerPawns.clear();
 			auto ActorList = ReadPtr(PersistentLevel, Offsets::Engine::Level::AActors);
 
@@ -206,18 +221,22 @@ namespace Render {
 
 			if (settings.PlayersAround) {
 				char EnemiesBuffer[20];
-				sprintf_s(EnemiesBuffer, "Enemies: %u", PlayerPawns.size());
+				sprintf_s(EnemiesBuffer, XorStr("Enemies: %u").c_str(), PlayerPawns.size());
 				window.DrawList->AddText(ImVec2(width / 2, 100), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }), EnemiesBuffer);
 			}
 
-			/*
 			for (auto pawn : PlayerPawns)
 			{
 				auto RootComp = ReadPtr(pawn, Offsets::Engine::Actor::RootComponent);
 				if (!valid_pointer(RootComp)) continue;
 				FVector pawnPosition = *(FVector*)(RootComp + Offsets::Engine::SceneComponent::RelativeLocation);
-				PawnLocations.push_back(pawnPosition);
-			}*/
+
+				if (settings.ESP.Players) {
+					FVector2D worldPawnPos = Utils::WorldToScreen(pawnPosition, myinfo);
+					window.DrawList->AddText(ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }), 
+						XorStr("[Player]").c_str());
+				}
+			}
 
 		} while (FALSE);
 

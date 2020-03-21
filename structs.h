@@ -101,29 +101,74 @@ public:
 	}
 };
 
-typedef struct {
-	float X, Y, Z;
-} FVector;
+typedef struct _D3DMATRIX {
+	union {
+		struct {
+			float        _11, _12, _13, _14;
+			float        _21, _22, _23, _24;
+			float        _31, _32, _33, _34;
+			float        _41, _42, _43, _44;
 
-typedef struct {
-	float X, Y;
-} FVector2D;
+		};
+		float m[4][4];
+	};
+} D3DMATRIX;
 
-typedef struct {
-	float Pitch;
-	float Yaw;
-	float Roll;
-} FRotator;
+struct FVector
+{
+	float x, y, z;
 
-typedef struct {
+	FVector() {}
+
+	FVector(float x, float y, float z)
+	{
+		this->x = x;
+		this->y = y;
+		this->z = z;
+	}
+
+	inline float Dot(FVector v)
+	{
+		return x * v.x + y * v.y + z * v.z;
+	}
+
+	FVector operator+(FVector v)
+	{
+		return FVector(x + v.x, y + v.y, z + v.z);
+	}
+
+	FVector operator-(FVector v)
+	{
+		return FVector(x - v.x, y - v.y, z - v.z);
+	}
+};
+
+struct FVector2D
+{
+	float x, y;
+
+	FVector2D() {}
+
+	FVector2D(float x, float y)
+	{
+		this->x = x;
+		this->y = y;
+	}
+};
+
+struct FRotator
+{
+	float pitch, yaw, roll;
+};
+
+struct FMinimalViewInfo
+{
 	FVector Location;
 	FRotator Rotation;
 	float FOV;
-	float OrthoWidth;
-	float OrthoNearClipPlane;
-	float OrthoFarClipPlane;
-	float AspectRatio;
-} FMinimalViewInfo;
+	float DesiredFOV;
+	char _pad01[2000];
+};
 
 typedef struct {
 	float M[4][4];

@@ -6,6 +6,7 @@ namespace Offsets {
 	extern PVOID* uWorld;
 	extern DWORD FnFree;
 	extern DWORD GetObjectName;
+	extern DWORD CameraDecrypt;
 
 	namespace Engine {
 

@@ -10,6 +10,7 @@ namespace Settings {
 		settings.PlayersAround = true;
 		settings.Loop = true;
 		settings.Decrypt = true;
+		settings.ESP.Players = true;
 
 		return true;
 	}

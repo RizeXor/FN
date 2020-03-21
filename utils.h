@@ -6,6 +6,7 @@
 #include "structs.h"
 #include "xorstr.h"
 
+#define M_PI 3.1415926
 #define RELATIVE_ADDR(addr, size) ((PBYTE)((UINT_PTR)(addr) + *(PINT)((UINT_PTR)(addr) + ((size) - sizeof(INT))) + (size)))
 
 #define ReadPtr(base, offset) (*(ULONGLONG*)((base + offset)))
@@ -16,6 +17,10 @@ namespace Utils {
 	BOOLEAN Initialize();
 
 	void decrypt_name(uint64_t id, char* outbuf, int outbuf_size);
+	/*VOID ToMatrixWithScale(float* in, float out[4][4]);
+	VOID GetBoneLocation(float compMatrix[4][4], PVOID bones, DWORD index, float out[3]);
+	VOID CalcAngle(float* src, float* dst, float* angles);*/
+	FVector2D WorldToScreen(FVector Location, FMinimalViewInfo info);
 
 	PBYTE FindPattern(LPCSTR pattern, LPCSTR mask);
 	VOID CreateConsole();
@@ -50,7 +55,7 @@ namespace Utils {
 	Ret SpoofCall(Ret(*fn)(Args...), Args... args) {
 		static PVOID trampoline = nullptr;
 		if (!trampoline) {
-			trampoline = Utils::FindPattern("\xFF\x27", "xx");
+			trampoline = Utils::FindPattern(XorStr("\xFF\x26").c_str(), XorStr("xx").c_str());
 			if (!trampoline) {
 				MessageBox(0, XorStr(L"Failed to find valid trampoline").c_str(), XorStr(L"Failure").c_str(), 0);
 				ExitProcess(0);
