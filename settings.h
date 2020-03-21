@@ -3,7 +3,11 @@
 struct SETTINGS
 {
 	bool Aimbot;
+	bool Debug;
 	bool FOV;
+	bool PlayersAround;
+	bool Loop;
+	bool Decrypt;
 	float FOVSize;
 	struct {
 		bool Players;

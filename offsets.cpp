@@ -1,16 +1,19 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 namespace Offsets {
 	PVOID* uWorld = 0;
+	DWORD FnFree = 0x2A6E690;
+	DWORD GetObjectName = 0x4114180;
 
 	namespace Engine {
+
 		namespace World {
 			DWORD OwningGameInstance = 0;
 			DWORD Levels = 0;
 		}
 
 		namespace Level {
-			DWORD AActors = 0x98;
+			DWORD AActors = 0;
 		}
 
 		namespace GameInstance {
@@ -21,13 +24,9 @@ namespace Offsets {
 			DWORD PlayerController = 0;
 		}
 
-		namespace Controller {
-			DWORD ControlRotation = 0;
-			PVOID SetControlRotation = 0;
-		}
-
 		namespace PlayerController {
 			DWORD AcknowledgedPawn = 0;
+			DWORD PlayerCameraManager = 0;
 		}
 
 		namespace Pawn {
@@ -68,7 +67,20 @@ namespace Offsets {
 			MessageBox(0, XorStr(L"Failed to find uWorld").c_str(), XorStr(L"Failure").c_str(), 0);
 			return FALSE;
 		}
+
 		uWorld = reinterpret_cast<decltype(uWorld)>(RELATIVE_ADDR(addr, 7));
+
+		Engine::World::OwningGameInstance = 0x188;
+		Engine::GameInstance::LocalPlayers = 0x38;
+		Engine::Level::AActors = 0x98;
+
+		Engine::PlayerController::AcknowledgedPawn = 0x298;
+		Engine::PlayerController::PlayerCameraManager = 0x2B0;
+
+		Engine::Player::PlayerController = 0x30;
+		Engine::Actor::RootComponent = 0x130;
+		Engine::World::Levels = 0x148;
+		Engine::SceneComponent::RelativeLocation = 0x11C;
 
 		return TRUE;
 	}

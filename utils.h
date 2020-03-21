@@ -1,16 +1,24 @@
 #pragma once
 
 #include <Windows.h>
-#include <iostream>
+#include <string>
 
+#include "structs.h"
 #include "xorstr.h"
 
 #define RELATIVE_ADDR(addr, size) ((PBYTE)((UINT_PTR)(addr) + *(PINT)((UINT_PTR)(addr) + ((size) - sizeof(INT))) + (size)))
 
-#define ReadPointer(base, offset) (*(PVOID *)(((PBYTE)base + offset)))
+#define ReadPtr(base, offset) (*(ULONGLONG*)((base + offset)))
+#define ReadDWORD(base, offset) (*(PDWORD)(((PBYTE)base + offset)))
+#define ReadBYTE(base, offset) (*(((PBYTE)base + offset)))
 
 namespace Utils {
+	BOOLEAN Initialize();
+
+	void decrypt_name(uint64_t id, char* outbuf, int outbuf_size);
+
 	PBYTE FindPattern(LPCSTR pattern, LPCSTR mask);
+	VOID CreateConsole();
 
 	namespace _SpoofCallInternal {
 		extern "C" PVOID RetSpoofStub();

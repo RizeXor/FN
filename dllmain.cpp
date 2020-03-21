@@ -1,15 +1,19 @@
 #include "stdafx.h"
 
 VOID Main() {
+
 	MH_Initialize();
-	
-	if (!Render::Initialize())
+
+	if (!Utils::Initialize())
+		return;
+
+	if (!Offsets::Initialize())
 		return;
 
 	if (!Settings::Initialize())
 		return;
 
-	if (!Offsets::Initialize())
+	if (!Render::Initialize())
 		return;
 }
 

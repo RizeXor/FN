@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <windows.h>
 #include <string>
+#include <iostream>
+
+using namespace std;
 
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
@@ -20,3 +23,6 @@
 #include "settings.h"
 #include "offsets.h"
 #include "utils.h"
+#include "structs.h"
+
+#define valid_pointer(pointer) (pointer != NULL && (uint64_t)pointer >= 0x10000 && (uint64_t)pointer >= 0x10000000000 && (uint64_t)pointer < 0x00007FFFFFFEFFFF && (uint64_t)pointer != 0xFFFFFFFF)

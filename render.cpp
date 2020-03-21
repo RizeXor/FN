@@ -4,6 +4,16 @@
 
 IMGUI_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+int ActorCount = 0;
+uintptr_t UworldAddress = 0;
+vector<ULONGLONG> PlayerPawns;
+char* PlayerName = (char*)"Nothing";
+int pwnId = 0;
+static float width = 0;
+static float height = 0;
+static HWND hWnd = 0;
+vector<FVector> PawnLocations;
+
 namespace Render {
 	BOOLEAN showMenu = FALSE;
 
@@ -42,25 +52,27 @@ namespace Render {
 			ImGui::SetWindowSize(ImVec2(500, 600), ImGuiCond_FirstUseEver);
 			ImGui::Text(XorStr("GayNiteFN").c_str());
 
+			ImGui::Text(XorStr("Aimbot:").c_str());
+			ImGui::Checkbox(XorStr("Memory Aimbot").c_str(), &settings.Aimbot);
+			ImGui::Checkbox(XorStr("Decrypt").c_str(), &settings.Decrypt);
+			ImGui::Checkbox(XorStr("Loop").c_str(), &settings.Loop);
 
-			if (ImGui::CollapsingHeader("Aimbot:"))
-			{
-				ImGui::Checkbox(XorStr("Memory Aimbot").c_str(), &settings.Aimbot);
+			ImGui::Text(XorStr("Visuals:").c_str());
+			ImGui::Checkbox(XorStr("BOX ESP").c_str(), &settings.ESP.Players);
+			ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
+			ImGui::Checkbox(XorStr("Players Around").c_str(), &settings.PlayersAround);
+			if (settings.FOV) {
+				ImGui::SliderFloat(XorStr("aim-fov##slider").c_str(), &settings.FOVSize, 0.0f, 1000.0f, XorStr("%.2f").c_str());
 			}
 
-			if (ImGui::CollapsingHeader("Visuals:"))
-			{
-				ImGui::Checkbox(XorStr("BOX ESP").c_str(), &settings.ESP.Players);
-				ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
-
-				if (settings.FOV) {
-					ImGui::SliderFloat(XorStr("aim-fov##slider").c_str(), &settings.FOVSize, 0.0f, 1000.0f, XorStr("%.2f").c_str());
-				}
-			}
-
-			if (ImGui::CollapsingHeader("Debug:"))
-			{
-				ImGui::Text(XorStr("0x%llx\n").c_str(), Offsets::uWorld);
+			ImGui::Text(XorStr("Debug:").c_str());
+			if (!settings.Debug) {
+				ImGui::Text(XorStr("Actor Count -> %lu\n").c_str(), ActorCount);
+				ImGui::Text(XorStr("Pawns -> %lu\n").c_str(), PlayerPawns.size());
+				ImGui::Text(XorStr("PawnID -> %lu\n").c_str(), pwnId);
+				char buffer[40] = { 0 };
+				sprintf_s(buffer, "%llx\n", UworldAddress);
+				ImGui::InputText(XorStr("UWorld").c_str(), buffer, 40);
 			}
 
 			ImGui::End();
@@ -94,10 +106,6 @@ namespace Render {
 	}
 
 	__declspec(dllexport) HRESULT PresentHook(IDXGISwapChain* swapChain, UINT syncInterval, UINT flags) {
-		static float width = 0;
-		static float height = 0;
-		static HWND hWnd = 0;
-
 		if (!device) {
 			swapChain->GetDevice(__uuidof(device), reinterpret_cast<PVOID*>(&device));
 			device->GetImmediateContext(&immediateContext);
@@ -141,7 +149,77 @@ namespace Render {
 
 		auto& window = BeginScene();
 
-		window.DrawList->AddCircle(ImVec2(width / 2, height / 2), settings.FOVSize, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 1.0f }), 32, 2.0f);
+		if (settings.FOV) {
+			window.DrawList->AddCircle(ImVec2(width / 2, height / 2), settings.FOVSize, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 1.0f }), 32, 2.0f);
+		}
+
+		do {
+			auto world = *Offsets::uWorld;
+			if (!valid_pointer((void*)world)) break;
+
+			UworldAddress = (ULONGLONG)world;
+
+			ULONGLONG PersistentLevel = *(ULONGLONG*)((ULONGLONG)world + 0x30);
+			if (!valid_pointer((void*)PersistentLevel)) break;
+
+			ActorCount = *(UINT32*)(PersistentLevel + Offsets::Engine::Level::AActors + sizeof(ULONGLONG));
+			if (ActorCount == 0) break;
+
+			auto gameInstance = ReadPtr((ULONGLONG)world, Offsets::Engine::World::OwningGameInstance);
+			if (!valid_pointer((void*)gameInstance)) break;
+
+			auto localPlayers = ReadPtr(gameInstance, Offsets::Engine::GameInstance::LocalPlayers);
+			if (!valid_pointer((void*)localPlayers)) break;
+
+			auto localPlayer = ReadPtr(localPlayers, 0);
+			if (!valid_pointer((void*)localPlayer)) break;
+
+			auto localPlayerController = ReadPtr(localPlayer, Offsets::Engine::Player::PlayerController);
+			if (!valid_pointer((void*)localPlayerController)) break;
+
+			auto AcknowledgedPawn = ReadPtr(localPlayerController, Offsets::Engine::PlayerController::AcknowledgedPawn);
+			if (!valid_pointer((void*)AcknowledgedPawn)) break;
+			
+			PlayerPawns.clear();
+			auto ActorList = ReadPtr(PersistentLevel, Offsets::Engine::Level::AActors);
+
+			if (!valid_pointer((void*)ActorList)) break;
+
+			if (settings.Loop) {
+				for (unsigned int pw = 0; pw < ActorCount; pw++) {
+					auto Actor = ReadPtr(ActorList, pw * sizeof(ULONGLONG));
+
+					if (!valid_pointer((void*)Actor) || Actor == AcknowledgedPawn)
+						continue;
+
+					char buffer[100] = { 0 };
+					if (settings.Decrypt) {
+						int ActorId = *(int*)(Actor + 0x18);
+						Utils::decrypt_name(ActorId, buffer, 64);
+					}
+
+					if (strstr(buffer, "PlayerPawn_Athena_C") || strstr(buffer, "PlayerPawn_Athena_Phoebe_C") || strstr(buffer, "PlayerPawn_French")) {
+						PlayerPawns.push_back(Actor);
+					}
+				}
+			}
+
+			if (settings.PlayersAround) {
+				char EnemiesBuffer[20];
+				sprintf_s(EnemiesBuffer, "Enemies: %u", PlayerPawns.size());
+				window.DrawList->AddText(ImVec2(width / 2, 100), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }), EnemiesBuffer);
+			}
+
+			/*
+			for (auto pawn : PlayerPawns)
+			{
+				auto RootComp = ReadPtr(pawn, Offsets::Engine::Actor::RootComponent);
+				if (!valid_pointer(RootComp)) continue;
+				FVector pawnPosition = *(FVector*)(RootComp + Offsets::Engine::SceneComponent::RelativeLocation);
+				PawnLocations.push_back(pawnPosition);
+			}*/
+
+		} while (FALSE);
 
 		Render::EndScene(window);
 

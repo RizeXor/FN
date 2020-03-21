@@ -4,8 +4,11 @@
 
 namespace Offsets {
 	extern PVOID* uWorld;
+	extern DWORD FnFree;
+	extern DWORD GetObjectName;
 
 	namespace Engine {
+
 		namespace World {
 			extern DWORD OwningGameInstance;
 			extern DWORD Levels;
@@ -23,13 +26,9 @@ namespace Offsets {
 			extern DWORD PlayerController;
 		}
 
-		namespace Controller {
-			extern DWORD ControlRotation;
-			extern PVOID SetControlRotation;
-		}
-
 		namespace PlayerController {
 			extern DWORD AcknowledgedPawn;
+			extern DWORD PlayerCameraManager;
 		}
 
 		namespace Pawn {
