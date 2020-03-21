@@ -179,6 +179,12 @@ namespace Render {
 			auto localPlayerController = ReadPtr(localPlayer, Offsets::Engine::Player::PlayerController);
 			if (!valid_pointer((void*)localPlayerController)) break;
 
+			auto PlayerControllerVTable = *(ULONGLONG*)(localPlayerController);
+			if (!valid_pointer((void*)PlayerControllerVTable)) break;
+
+			void(__fastcall * csr_func)(uint64_t, FRotator, bool) = 
+				(*(void(__fastcall**)(uint64_t, FRotator, bool))(PlayerControllerVTable + Offsets::ClientSetRotation));
+
 			auto PlayerCameraManager = ReadPtr(localPlayerController, Offsets::Engine::PlayerController::PlayerCameraManager);
 			if (!valid_pointer((void*)PlayerCameraManager)) break;
 
@@ -186,7 +192,7 @@ namespace Render {
 			if (!valid_pointer((void*)PlayerCameraManagerVTable)) break;
 
 			uint64_t(__fastcall * func)(uint64_t, FMinimalViewInfo*) = 
-				(*(uint64_t(__fastcall*)(uint64_t, FMinimalViewInfo*))(*(uint64_t*)(PlayerCameraManagerVTable + 0x660)));
+				(*(uint64_t(__fastcall*)(uint64_t, FMinimalViewInfo*))(*(uint64_t*)(PlayerCameraManagerVTable + Offsets::CameraDecrypt)));
 
 			Utils::SpoofCall(func, (uint64_t)PlayerCameraManager, &myinfo);
 
@@ -216,23 +222,25 @@ namespace Render {
 					if (strstr(buffer, "PlayerPawn_Athena_C") || 
 						strstr(buffer, "PlayerPawn_Athena_Phoebe_C") || 
 						strstr(buffer, "PlayerPawn_French")) {
-						auto RootComp = ReadPtr(Actor, Offsets::Engine::Actor::RootComponent);
+						/*auto RootComp = ReadPtr(Actor, Offsets::Engine::Actor::RootComponent);
 						if (!valid_pointer(RootComp)) continue;
-						FVector pawnPosition = *(FVector*)(RootComp + Offsets::Engine::SceneComponent::RelativeLocation);
+						FVector pawnPosition = *(FVector*)(RootComp + Offsets::Engine::SceneComponent::RelativeLocation);*/
 
-						FVector pawnPosition2;
-						if (!Utils::GetBoneMatrix(Actor, 66, &pawnPosition2))
+						FVector pawnPosition;
+						if (!Utils::GetBoneMatrix(Actor, 66, &pawnPosition))
 							continue;
 
 						if (settings.ESP.Players) {
 							FVector2D worldPawnPos = Utils::WorldToScreen(pawnPosition, myinfo);
 							window.DrawList->AddText(ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }),
-								to_string(pawnPosition2.z).c_str());
+								XorStr("[X]").c_str());
 						}
 						Pawns++;
 					}
 				}
 			}
+
+			Utils::SpoofCall(csr_func, localPlayerController, FRotator(89.0f, 0.0f, 0.0f), true);
 
 			if (settings.PlayersAround) {
 				char EnemiesBuffer[20];

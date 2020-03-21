@@ -10,6 +10,7 @@ namespace Offsets {
 	extern DWORD UObject;
 	extern DWORD DecryptFunc;
 	extern DWORD GetBoneMatrix;
+	extern DWORD ClientSetRotation;
 
 	namespace Engine {
 

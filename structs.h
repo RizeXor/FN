@@ -163,6 +163,18 @@ struct FVector2D
 struct FRotator
 {
 	float pitch, yaw, roll;
+
+	FRotator() {
+		this->pitch = 0.0f;
+		this->yaw = 0.0f;
+		this->roll = 0.0f;
+	}
+
+	FRotator(float pitch, float yaw, float roll) {
+		this->pitch = pitch;
+		this->yaw = yaw;
+		this->roll = roll;
+	}
 };
 
 struct FMinimalViewInfo

@@ -8,6 +8,7 @@ namespace Offsets {
 	DWORD UObject = 0x7EA8840;
 	DWORD DecryptFunc = 0x1FD26B0;
 	DWORD GetBoneMatrix = 0x3F968A0;
+	DWORD ClientSetRotation = 0x628;
 
 	namespace Engine {
 
