@@ -290,13 +290,13 @@ namespace Render {
 		}
 
 		if (settings.Aimbot && success && targetPawn && valid_pointer(localPlayerController)) {
-			FRotator angles;
+			/*FRotator angles;
 			angles.pitch = 89.0f;
 			angles.yaw = 0.0f;
-			angles.roll = 0.0f;
-			//FRotator angles;
-			//Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, 66, &angles);
-			Utils::SpoofCall(csr_func, localPlayerController, angles, false);
+			angles.roll = 0.0f;*/
+			FRotator angles;
+			if(Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, 66, &angles))
+				Utils::SpoofCall(csr_func, localPlayerController, angles, false);
 		}
 
 		Render::EndScene(window);

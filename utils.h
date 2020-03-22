@@ -22,7 +22,7 @@ namespace Utils {
 	VOID CalcAngle(float* src, float* dst, float* angles);*/
 	BOOL GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out);
 	FVector2D WorldToScreen(FVector Location, FMinimalViewInfo info);
-	void get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out);
+	bool get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out);
 
 	PBYTE FindPattern(LPCSTR pattern, LPCSTR mask);
 	VOID CreateConsole();

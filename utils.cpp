@@ -123,7 +123,7 @@ namespace Utils {
 		return a;
 	}
 
-	void get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out)
+	bool get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out)
 	{
 		FVector vec;
 		float x = 0, y = 0, z = 0;
@@ -134,32 +134,32 @@ namespace Utils {
 
 		if (!valid_pointer((void*)aactor))
 		{
-			return;
+			return false;
 		}
 
 		if (!GetBoneMatrix(aactor, bone, &vec))
 		{
-			return;
+			return false;
 		}
 
 		x = abs(cam_location.x - vec.x);
 		y = abs(cam_location.y - vec.y);
 		z = abs(cam_location.z - vec.z);
 
-		distance = Utils::SpoofCall(sqrtf, x + y + z);
+		distance = Utils::SpoofCall(sqrtf, x * x +  y * y + z * z);
 
 		pos.x = vec.x - cam_location.x;
 		pos.y = vec.y - cam_location.y;
 		pos.z = vec.z - cam_location.z;
 
-		pitch = -((acos(pos.z / distance) * 180.0f / M_PI) - 90.0f);
-		yaw = atan2(pos.y, pos.x) * 180.0f / M_PI;
+		pitch = -((acos(pos.z / distance) * 180.0f / (float)M_PI) - 90.0f);
+		yaw = (atan2(pos.y, pos.x) * 180.0f) / (float)M_PI;
 
 		out->pitch = cam_rotation.pitch + (pitch - cam_rotation.pitch);
 		out->yaw = cam_rotation.yaw + (yaw - cam_rotation.yaw);
 		out->roll = 0.0f;
 
-		return;
+		return true;
 	}
 
 	D3DMATRIX GetMatrix(FRotator rot, FVector origin = FVector(0, 0, 0))
