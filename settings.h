@@ -11,6 +11,7 @@ struct SETTINGS
 	float FOVSize;
 	struct {
 		bool Players;
+		bool PlayerLines;
 	} ESP;
 };
 

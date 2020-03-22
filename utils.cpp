@@ -113,22 +113,54 @@ namespace Utils {
 			a -= 360.0f;
 		}
 		return a;
+	}*/
+
+	float Normalize(float angle) {
+		float a = (float)fmod(fmod(angle, 360.0) + 360.0, 360.0);
+		if (a > 180.0f) {
+			a -= 360.0f;
+		}
+		return a;
 	}
 
-	VOID CalcAngle(float* src, float* dst, float* angles) {
-		float rel[3] = {
-			dst[0] - src[0],
-			dst[1] - src[1],
-			dst[2] - src[2],
-		};
+	void get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out)
+	{
+		FVector vec;
+		float x = 0, y = 0, z = 0;
+		float distance = 0.0f;
+		float pitch = 0.0f;
+		float yaw = 0.0f;
+		FVector pos;
 
-		auto dist = sqrtf(rel[0] * rel[0] + rel[1] * rel[1] + rel[2] * rel[2]);
-		auto yaw = atan2f(rel[1], rel[0]) * (180.0f / UCONST_Pi);
-		auto pitch = (-((acosf((rel[2] / dist)) * 180.0f / UCONST_Pi) - 90.0f));
+		if (!valid_pointer((void*)aactor))
+		{
+			return;
+		}
 
-		angles[0] = Normalize(pitch);
-		angles[1] = Normalize(yaw);
-	}*/
+		if (!GetBoneMatrix(aactor, bone, &vec))
+		{
+			return;
+		}
+
+		x = abs(cam_location.x - vec.x);
+		y = abs(cam_location.y - vec.y);
+		z = abs(cam_location.z - vec.z);
+
+		distance = Utils::SpoofCall(sqrtf, x + y + z);
+
+		pos.x = vec.x - cam_location.x;
+		pos.y = vec.y - cam_location.y;
+		pos.z = vec.z - cam_location.z;
+
+		pitch = -((acos(pos.z / distance) * 180.0f / M_PI) - 90.0f);
+		yaw = atan2(pos.y, pos.x) * 180.0f / M_PI;
+
+		out->pitch = cam_rotation.pitch + (pitch - cam_rotation.pitch);
+		out->yaw = cam_rotation.yaw + (yaw - cam_rotation.yaw);
+		out->roll = 0.0f;
+
+		return;
+	}
 
 	D3DMATRIX GetMatrix(FRotator rot, FVector origin = FVector(0, 0, 0))
 	{

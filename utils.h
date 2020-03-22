@@ -12,7 +12,7 @@
 #define ReadPtr(base, offset) (*(ULONGLONG*)((base + offset)))
 #define ReadDWORD(base, offset) (*(PDWORD)(((PBYTE)base + offset)))
 #define ReadBYTE(base, offset) (*(((PBYTE)base + offset)))
-
+    
 namespace Utils {
 	BOOLEAN Initialize();
 
@@ -22,12 +22,13 @@ namespace Utils {
 	VOID CalcAngle(float* src, float* dst, float* angles);*/
 	BOOL GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out);
 	FVector2D WorldToScreen(FVector Location, FMinimalViewInfo info);
+	void get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out);
 
 	PBYTE FindPattern(LPCSTR pattern, LPCSTR mask);
 	VOID CreateConsole();
 
 	namespace _SpoofCallInternal {
-		extern "C" PVOID RetSpoofStub();
+		extern "C" PVOID _spoofer_stub();
 
 		template <typename Ret, typename... Args>
 		inline Ret Wrapper(PVOID shell, Args... args) {
@@ -58,7 +59,7 @@ namespace Utils {
 		if (!trampoline) {
 			trampoline = Utils::FindPattern(XorStr("\xFF\x26").c_str(), XorStr("xx").c_str());
 			if (!trampoline) {
-				MessageBox(0, XorStr(L"Failed to find valid trampoline").c_str(), XorStr(L"Failure").c_str(), 0);
+				MessageBox(0, L"dsfsdfsdfsd", L"dsfdsfdsf", 0);
 				ExitProcess(0);
 			}
 		}
@@ -72,6 +73,6 @@ namespace Utils {
 			reinterpret_cast<void*>(fn),
 		};
 
-		return _SpoofCallInternal::Remapper<sizeof...(Args), void>::template Call<Ret, Args...>(&_SpoofCallInternal::RetSpoofStub, &params, args...);
+		return _SpoofCallInternal::Remapper<sizeof...(Args), void>::template Call<Ret, Args...>(&_SpoofCallInternal::_spoofer_stub, &params, args...);
 	}
 }

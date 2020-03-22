@@ -1,8 +1,8 @@
-PUBLIC RetSpoofStub
+PUBLIC _spoofer_stub
          
 .code
          
-RetSpoofStub PROC
+_spoofer_stub PROC
 	pop r11 
     add rsp, 8 
     mov rax, [rsp + 24] 
@@ -12,7 +12,7 @@ RetSpoofStub PROC
             
     mov r10, [rax + 8]
     mov [rax + 8], r11
-
+         
     mov [rax + 16], rsi 
     lea rsi, fixup
     mov [rax], rsi 
@@ -24,6 +24,6 @@ fixup:
     mov rcx, rsi 
     mov rsi, [rcx + 16]
     jmp QWORD PTR [rcx + 8]
-RetSpoofStub ENDP
+_spoofer_stub ENDP
 
 END
