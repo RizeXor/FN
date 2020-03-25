@@ -855,11 +855,20 @@ void ImGuiIO::AddInputCharactersUTF8(const char* utf8_chars)
 #define IM_NEWLINE "\n"
 #endif
 
+float sqrtf_custom1(float n)
+{
+	static union { int i; float f; } u;
+
+	u.i = 0x5F375A86 - (*(int*)&n >> 1);
+
+	return (int(3) - n * u.f * u.f) * n * u.f * 0.5f;
+}
+
 ImVec2 ImLineClosestPoint(const ImVec2& a, const ImVec2& b, const ImVec2& p)
 {
 	ImVec2 ap = p - a;
 	ImVec2 ab_dir = b - a;
-	float ab_len = sqrtf(ab_dir.x * ab_dir.x + ab_dir.y * ab_dir.y);
+	float ab_len = sqrtf_custom1(ab_dir.x * ab_dir.x + ab_dir.y * ab_dir.y);
 	ab_dir *= 1.0f / ab_len;
 	float dot = ap.x * ab_dir.x + ap.y * ab_dir.y;
 	if (dot < 0.0f)

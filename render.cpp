@@ -4,7 +4,7 @@
 
 IMGUI_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int ActorCount = 0;
+static int player_list_size = 0;
 uintptr_t UworldAddress = 0;
 int Pawns = 0;
 char* PlayerName = (char*)"Nothing";
@@ -15,6 +15,9 @@ static HWND hWnd = 0;
 float Pitch = 0;
 FMinimalViewInfo myinfo;
 bool pressed = false;
+PVOID trampoline = 0;
+ULONGLONG GetObjectNameAddr = 0;
+void(__fastcall * csr_func)(uint64_t, FRotator, bool) = nullptr;
 
 namespace Render {
 	BOOLEAN showMenu = FALSE;
@@ -55,13 +58,12 @@ namespace Render {
 			ImGui::Text(XorStr("GayNiteFN").c_str());
 
 			ImGui::Text(XorStr("Aimbot:").c_str());
-			ImGui::Checkbox(XorStr("Memory Aimbot").c_str(), &settings.Aimbot);
-			ImGui::Checkbox(XorStr("Player Lines").c_str(), &settings.ESP.PlayerLines);
-			ImGui::Checkbox(XorStr("Decrypt").c_str(), &settings.Decrypt);
-			ImGui::Checkbox(XorStr("Loop").c_str(), &settings.Loop);
+			ImGui::Checkbox(XorStr("Aimbot").c_str(), &settings.Aimbot);
 
 			ImGui::Text(XorStr("Visuals:").c_str());
-			ImGui::Checkbox(XorStr("BOX ESP").c_str(), &settings.ESP.Players);
+			ImGui::Checkbox(XorStr("Player Lines").c_str(), &settings.ESP.PlayerLines);
+			ImGui::Checkbox(XorStr("Bone ESP").c_str(), &settings.ESP.BoneESP);
+			ImGui::Checkbox(XorStr("Box ESP").c_str(), &settings.ESP.BOXESP);
 			ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
 			ImGui::Checkbox(XorStr("Players Around").c_str(), &settings.PlayersAround);
 			if (settings.FOV) {
@@ -70,10 +72,9 @@ namespace Render {
 
 			ImGui::Text(XorStr("Debug:").c_str());
 			if (!settings.Debug) {
-				ImGui::Text(XorStr("Actor Count -> %lu\n").c_str(), ActorCount);
 				ImGui::Text(XorStr("Pitch -> %f\n").c_str(), Pitch);
 				ImGui::Text(XorStr("Pawns -> %lu\n").c_str(), Pawns);
-				ImGui::Text(XorStr("PawnID -> %lu\n").c_str(), pwnId);
+				ImGui::Text(XorStr("tramp -> 0x%llx\n").c_str(), trampoline);
 				char buffer[40] = { 0 };
 				sprintf_s(buffer, "%llx\n", UworldAddress);
 				ImGui::InputText(XorStr("UWorld").c_str(), buffer, 40);
@@ -87,17 +88,12 @@ namespace Render {
 		ImGui::Render();
 	}
 
-	__declspec(dllexport) LRESULT CALLBACK WndProcHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	LRESULT CALLBACK WndProcHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (msg == WM_KEYUP && (wParam == VK_INSERT || (showMenu && wParam == VK_ESCAPE))) {
 			showMenu = !showMenu;
 			ImGui::GetIO().MouseDrawCursor = showMenu;
-
-			/*if (!showMenu) {
-				SettingsHelper::SaveSettings();
-			}*/
 		}
 		else if (msg == WM_QUIT && showMenu) {
-			// SettingsHelper::SaveSettings();
 			ExitProcess(0);
 		}
 
@@ -109,7 +105,58 @@ namespace Render {
 		return CallWindowProc(WndProcOriginal, hwnd, msg, wParam, lParam);
 	}
 
-	__declspec(dllexport) HRESULT PresentHook(IDXGISwapChain* swapChain, UINT syncInterval, UINT flags) {
+	VOID AddLine(ImGuiWindow& window, float width, float height, FVector a, FVector b, ImU32 color, float& minX, float& maxX, float& minY, float& maxY) {
+		FVector2D ac = Utils::WorldToScreen(a, myinfo);
+		FVector2D bc = Utils::WorldToScreen(b, myinfo);
+		if (true) {
+			window.DrawList->AddLine(ImVec2(ac.x, ac.y), ImVec2(bc.x, bc.y), color, 1.2f);
+
+			minX = min(ac.x, minX);
+			minX = min(bc.x, minX);
+
+			maxX = max(ac.x, maxX);
+			maxX = max(bc.x, maxX);
+
+			minY = min(ac.y, minY);
+			minY = min(bc.y, minY);
+
+			maxY = max(ac.y, maxY);
+			maxY = max(bc.y, maxY);
+		}
+	}
+
+	void InitClientSetRotation(ULONGLONG PlayerController) {
+		auto PlayerControllerVTable = *(ULONGLONG*)(PlayerController);
+		if (!valid_pointer((void*)PlayerControllerVTable)) return;
+
+		csr_func =
+			(*(void(__fastcall**)(uint64_t, FRotator, bool))(PlayerControllerVTable + Offsets::ClientSetRotation));
+	}
+
+	void InitAddresses() {
+		PVOID Base = (PVOID)GetModuleHandle(nullptr);
+		//41 ff 26
+		//trampoline = (PVOID)((ULONGLONG)Base + 0x22702c0);
+		trampoline = (PVOID)Utils::FindPattern("\x41\xFF\x26", "xxx");
+		GetObjectNameAddr = ((ULONGLONG)Base + Offsets::GetObjectName);
+	}
+
+	void DecryptCamera(ULONGLONG PlayerCameraManager) {
+		auto PlayerCameraManagerVTable = *(ULONGLONG*)(PlayerCameraManager);
+		if (!valid_pointer((void*)PlayerCameraManagerVTable)) return;
+
+		uint64_t(__fastcall * func)(uint64_t, FMinimalViewInfo*) =
+			(*(uint64_t(__fastcall*)(uint64_t, FMinimalViewInfo*))(*(uint64_t*)(PlayerCameraManagerVTable + Offsets::CameraDecrypt)));
+		Utils::spoof_call(trampoline, func, (uint64_t)PlayerCameraManager, &myinfo);
+		Pitch = myinfo.Rotation.pitch;
+	}
+
+	FString GetObjName(UINT64* obj)
+	{
+		return reinterpret_cast<FString(__fastcall*)(UINT64*)>(GetObjectNameAddr)(obj);
+	}
+
+	HRESULT PresentHook(IDXGISwapChain* swapChain, UINT syncInterval, UINT flags) {
 		if (!device) {
 			swapChain->GetDevice(__uuidof(device), reinterpret_cast<PVOID*>(&device));
 			device->GetImmediateContext(&immediateContext);
@@ -147,6 +194,8 @@ namespace Render {
 
 			ImGui_ImplDX11_Init(targetWindow, device, immediateContext);
 			ImGui_ImplDX11_CreateDeviceObjects();
+
+			InitAddresses();
 		}
 
 		immediateContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
@@ -154,120 +203,249 @@ namespace Render {
 		auto& window = BeginScene();
 
 		if (settings.FOV) {
-			window.DrawList->AddCircle(ImVec2(width / 2, height / 2), settings.FOVSize, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 1.0f }), 32, 2.0f);
+			window.DrawList->AddCircle(ImVec2(960, height / 2), settings.FOVSize, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 1.0f }), 32, 2.0f);
 		}
 
 		auto success = FALSE;
 		float closestDistance = FLT_MAX;
 		ULONGLONG closestPawn = NULL;
 		ULONGLONG targetPawn = NULL;
-		void(__fastcall * csr_func)(uint64_t, FRotator, bool) = nullptr;
-		ULONGLONG localPlayerController = 0;
+		ULONGLONG PlayerController = 0;
 		do {
 			auto world = *Offsets::uWorld;
 			if (!valid_pointer((void*)world)) break;
 
 			UworldAddress = (ULONGLONG)world;
 
-			ULONGLONG PersistentLevel = *(ULONGLONG*)((ULONGLONG)world + 0x30);
+			ULONGLONG PersistentLevel = *(ULONGLONG*)((ULONGLONG)world + Offsets::PersistentLevel);
 			if (!valid_pointer((void*)PersistentLevel)) break;
 
-			ActorCount = *(UINT32*)(PersistentLevel + Offsets::Engine::Level::AActors + sizeof(ULONGLONG));
+			int ActorCount = *(UINT32*)(PersistentLevel + Offsets::AActors + sizeof(ULONGLONG));
 			if (ActorCount == 0) break;
 
-			auto gameInstance = ReadPtr((ULONGLONG)world, Offsets::Engine::World::OwningGameInstance);
+			auto gameInstance = ReadPtr((ULONGLONG)world, Offsets::OwningGameInstance);
 			if (!valid_pointer((void*)gameInstance)) break;
 
-			auto localPlayers = ReadPtr(gameInstance, Offsets::Engine::GameInstance::LocalPlayers);
+			auto localPlayers = ReadPtr(gameInstance, Offsets::LocalPlayers);
 			if (!valid_pointer((void*)localPlayers)) break;
 
 			auto localPlayer = ReadPtr(localPlayers, 0);
 			if (!valid_pointer((void*)localPlayer)) break;
 
-			FVector LocalPlayerPos = *(FVector*)(localPlayers + 0x88);
+			FVector LocalPlayerPos = *(FVector*)(localPlayers + Offsets::LocalPlayerPos);
 
-			localPlayerController = ReadPtr(localPlayer, Offsets::Engine::Player::PlayerController);
-			if (!valid_pointer((void*)localPlayerController)) break;
+			PlayerController = ReadPtr(localPlayer, Offsets::PlayerController);
+			if (!valid_pointer((void*)PlayerController)) break;
 
-			auto PlayerControllerVTable = *(ULONGLONG*)(localPlayerController);
-			if (!valid_pointer((void*)PlayerControllerVTable)) break;
+			InitClientSetRotation(PlayerController);
 
-			csr_func = 
-				(*(void(__fastcall**)(uint64_t, FRotator, bool))(PlayerControllerVTable + Offsets::ClientSetRotation));
-
-			auto PlayerCameraManager = ReadPtr(localPlayerController, Offsets::Engine::PlayerController::PlayerCameraManager);
+			auto PlayerCameraManager = ReadPtr(PlayerController, Offsets::PlayerCameraManager);
 			if (!valid_pointer((void*)PlayerCameraManager)) break;
 
-			auto PlayerCameraManagerVTable = *(ULONGLONG*)(PlayerCameraManager);
-			if (!valid_pointer((void*)PlayerCameraManagerVTable)) break;
+			DecryptCamera(PlayerCameraManager);
 
-			uint64_t(__fastcall * func)(uint64_t, FMinimalViewInfo*) = 
-				(*(uint64_t(__fastcall*)(uint64_t, FMinimalViewInfo*))(*(uint64_t*)(PlayerCameraManagerVTable + Offsets::CameraDecrypt)));
+			auto AcknowledgedPawn = ReadPtr(PlayerController, Offsets::AcknowledgedPawn);
 
-			Utils::SpoofCall(func, (uint64_t)PlayerCameraManager, &myinfo);
+			if (!valid_pointer(AcknowledgedPawn)) break;
 
-			Pitch = myinfo.Rotation.pitch;
-			
-			auto AcknowledgedPawn = ReadPtr(localPlayerController, Offsets::Engine::PlayerController::AcknowledgedPawn);
-			if (!valid_pointer((void*)AcknowledgedPawn)) break;
+			auto LocalPlayerState = ReadPtr(AcknowledgedPawn, Offsets::PlayerState);
+
+			if (!valid_pointer(LocalPlayerState)) break;
+
+			auto TeamIndex = *(int*)(LocalPlayerState + Offsets::TeamIndex);
 
 			Pawns = 0;
-			auto ActorList = ReadPtr(PersistentLevel, Offsets::Engine::Level::AActors);
+			auto ActorList = ReadPtr(PersistentLevel, Offsets::AActors);
 
 			if (!valid_pointer((void*)ActorList)) break;
 
-			if (settings.Loop) {
-				for (unsigned int pw = 0; pw < ActorCount; pw++) {
-					auto Actor = ReadPtr(ActorList, pw * sizeof(ULONGLONG));
+			for (unsigned int pw = 0; pw < ActorCount; pw++) {
+				auto Actor = ReadPtr(ActorList, pw * sizeof(ULONGLONG));
 
-					if (!valid_pointer((void*)Actor) || Actor == AcknowledgedPawn)
+				if (!valid_pointer((void*)Actor) || Actor == AcknowledgedPawn)
+					continue;
+
+				auto ObjectName = GetObjName((ULONGLONG*)Actor);
+				char* buffer = (char*)ObjectName.ToString().c_str();
+
+				if (strstr(buffer, XorStr("PlayerPawn_Athena_C").c_str()) ||
+					strstr(buffer, XorStr("PlayerPawn_Athena_Phoebe_C").c_str()) ||
+					strstr(buffer, XorStr("BP_MangPlayerPawn_Default_C").c_str()) ||
+					strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_Midas_C").c_str()) ||
+					strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_Meowscles_C").c_str()) ||
+					strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_AdventureGirl_C").c_str()) ||
+					strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_TnTina_C").c_str()) ||
+					strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_HeadOfSecurity_C").c_str())) {
+					bool bot = false;
+
+					if (strstr(buffer, XorStr("PlayerPawn_Athena_Phoebe_C").c_str()) ||
+						strstr(buffer, XorStr("BP_MangPlayerPawn_Default_C").c_str()) ||
+						strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_Midas_C").c_str()) ||
+						strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_Meowscles_C").c_str()) ||
+						strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_AdventureGirl_C").c_str()) ||
+						strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_TnTina_C").c_str()) ||
+						strstr(buffer, XorStr("BP_MangPlayerPawn_Boss_HeadOfSecurity_C").c_str())) {
+						bot = true;
+					}
+
+					auto EnemyTeamState = ReadPtr(Actor, Offsets::PlayerState);
+					if (!valid_pointer(EnemyTeamState)) continue;
+
+					auto ActorTeamIndex = *(int*)(EnemyTeamState + Offsets::TeamIndex);
+
+					FVector neck;
+					if (!Utils::GetBoneMatrix(Actor, 65, &neck))
 						continue;
 
-					char buffer[100] = { 0 };
-					if (settings.Decrypt) {
-						int ActorId = *(int*)(Actor + 0x18);
-						Utils::decrypt_name(ActorId, buffer, 64);
-					}
+					float minX = FLT_MAX;
+					float maxX = -FLT_MAX;
+					float minY = FLT_MAX;
+					float maxY = -FLT_MAX;
 
-					if (strstr(buffer, XorStr("PlayerPawn_Athena_C").c_str()) || 
-						strstr(buffer, XorStr("PlayerPawn_Athena_Phoebe_C").c_str()) ||
-						strstr(buffer, XorStr("PlayerPawn_French").c_str())) {
-						/*auto RootComp = ReadPtr(Actor, Offsets::Engine::Actor::RootComponent);
-						if (!valid_pointer(RootComp)) continue;
-						FVector pawnPosition = *(FVector*)(RootComp + Offsets::Engine::SceneComponent::RelativeLocation);*/
+					auto color = ImGui::GetColorU32({ 0.0f, 0.0f, 1.0f, 1.0f });
+					if(TeamIndex == ActorTeamIndex)
+						color = ImGui::GetColorU32({ 0.0f, 1.0f, 0.0f, 1.0f });
+					else if(!bot)
+						color = ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f });
 
-						FVector headPos3d;
-						if (!Utils::GetBoneMatrix(Actor, 66, &headPos3d))
+					FVector2D worldPawnPos = Utils::WorldToScreen(neck, myinfo);
+
+					if (settings.ESP.BoneESP) {
+						//Top
+						FVector head;
+						if (!Utils::GetBoneMatrix(Actor, 66, &head))
 							continue;
 
-						FVector2D worldPawnPos = Utils::WorldToScreen(headPos3d, myinfo);
-						
-						if (settings.ESP.Players) {
-							window.DrawList->AddText(ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }),
-								XorStr("[X]").c_str());
-						}
+						FVector chest;
+						if (!Utils::GetBoneMatrix(Actor, 36, &chest))
+							continue;
 
-						if (settings.ESP.PlayerLines) {
-							window.DrawList->AddLine(ImVec2(960, height), 
-								ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 1.0f, 1.0f, 1.0f }));
-						}
+						FVector pelvis;
+						if (!Utils::GetBoneMatrix(Actor, 2, &pelvis))
+							continue;
 
-						if (settings.Aimbot) {
-							float dx = worldPawnPos.x - 960.0f;
-							float dy = worldPawnPos.y - 540.0f;
-							auto dist = Utils::SpoofCall(sqrtf, (float)(dx * dx + dy * dy));
-							if (dist < settings.FOVSize && dist < closestDistance) {
-								closestDistance = dist;
-								closestPawn = Actor;
-							}
-						}
+						//Arms
+						FVector leftShoulder;
+						if (!Utils::GetBoneMatrix(Actor, 9, &leftShoulder))
+							continue;
 
-						Pawns++;
+						FVector rightShoulder;
+						if (!Utils::GetBoneMatrix(Actor, 62, &rightShoulder))
+							continue;
+
+						FVector leftElbow;
+						if (!Utils::GetBoneMatrix(Actor, 10, &leftElbow))
+							continue;
+
+						FVector rightElbow;
+						if (!Utils::GetBoneMatrix(Actor, 38, &rightElbow))
+							continue;
+
+						FVector leftHand;
+						if (!Utils::GetBoneMatrix(Actor, 11, &leftHand))
+							continue;
+
+						FVector rightHand;
+						if (!Utils::GetBoneMatrix(Actor, 39, &rightHand))
+							continue;
+
+						//Bottom
+						FVector leftLeg;
+						if (!Utils::GetBoneMatrix(Actor, 67, &leftLeg))
+							continue;
+
+						FVector rightLeg;
+						if (!Utils::GetBoneMatrix(Actor, 74, &rightLeg))
+							continue;
+
+						FVector leftThigh;
+						if (!Utils::GetBoneMatrix(Actor, 73, &leftThigh))
+							continue;
+
+						FVector rightThigh;
+						if (!Utils::GetBoneMatrix(Actor, 80, &rightThigh))
+							continue;
+
+						FVector leftFoot;
+						if (!Utils::GetBoneMatrix(Actor, 68, &leftFoot))
+							continue;
+
+						FVector rightFoot;
+						if (!Utils::GetBoneMatrix(Actor, 75, &rightFoot))
+							continue;
+
+						FVector leftFeet;
+						if (!Utils::GetBoneMatrix(Actor, 71, &leftFeet))
+							continue;
+
+						FVector rightFeet;
+						if (!Utils::GetBoneMatrix(Actor, 78, &rightFeet))
+							continue;
+
+						FVector leftFeetFinger;
+						if (!Utils::GetBoneMatrix(Actor, 72, &leftFeetFinger))
+							continue;
+
+						FVector rightFeetFinger;
+						if (!Utils::GetBoneMatrix(Actor, 79, &rightFeetFinger))
+							continue;
+
+						AddLine(window, width, height, head, neck, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, neck, pelvis, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, chest, leftShoulder, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, chest, rightShoulder, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, leftShoulder, leftElbow, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, rightShoulder, rightElbow, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, leftElbow, leftHand, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, rightElbow, rightHand, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, pelvis, leftLeg, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, pelvis, rightLeg, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, leftLeg, leftThigh, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, rightLeg, rightThigh, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, leftThigh, leftFoot, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, rightThigh, rightFoot, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, leftFoot, leftFeet, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, rightFoot, rightFeet, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, leftFeet, leftFeetFinger, color, minX, maxX, minY, maxY);
+						AddLine(window, width, height, rightFeet, rightFeetFinger, color, minX, maxX, minY, maxY);
 					}
+
+					if (minX < width && maxX > 0 && minY < height && maxY > 0 && settings.ESP.BOXESP) {
+						auto topLeft = ImVec2(minX - 3.0f, minY - 3.0f);
+						auto bottomRight = ImVec2(maxX + 3.0f, maxY + 3.0f);
+
+						window.DrawList->AddRectFilled(topLeft, bottomRight, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 0.10f }));
+						window.DrawList->AddRect(topLeft, bottomRight, ImGui::GetColorU32({ 0.0f, 0.50f, 0.90f, 1.0f }), 0.5, 15, 1.5f);
+					}
+
+					if (settings.ESP.PlayerLines) {
+						window.DrawList->AddLine(ImVec2(960, height),
+							ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 1.0f, 1.0f, 1.0f }));
+					}
+
+					if (TeamIndex == ActorTeamIndex) {
+						Pawns++;
+						continue;
+					}
+
+					if (settings.Aimbot) {
+						float dx = worldPawnPos.x - 960.0f;
+						float dy = worldPawnPos.y - 540.0f;
+						auto dist = sqrtf(dx * dx + dy * dy);
+						if (dist < settings.FOVSize && dist < closestDistance) {
+							closestDistance = dist;
+							closestPawn = Actor;
+						}
+					}
+
+					Pawns++;
+				}
+				else {
+					continue;
 				}
 			}
 
-			if (settings.Aimbot && closestPawn && Utils::SpoofCall(GetAsyncKeyState, VK_RBUTTON) < 0) {
+			if (settings.Aimbot && closestPawn && GetAsyncKeyState(VK_RBUTTON) < 0 && GetForegroundWindow() == hWnd && !pressed) {
 				targetPawn = closestPawn;
 				pressed = true;
 			}
@@ -277,8 +455,8 @@ namespace Render {
 			}
 
 			if (settings.PlayersAround) {
-				char EnemiesBuffer[26];
-				sprintf_s(EnemiesBuffer, XorStr("Enemies: %u %d").c_str(), Pawns, pressed);
+				char EnemiesBuffer[32];
+				sprintf_s(EnemiesBuffer, XorStr("Enemies: %u %d %f").c_str(), Pawns, pressed, myinfo.Rotation.pitch);
 				window.DrawList->AddText(ImVec2(960, 100), ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f }), EnemiesBuffer);
 			}
 
@@ -289,14 +467,10 @@ namespace Render {
 			targetPawn = NULL;
 		}
 
-		if (settings.Aimbot && success && targetPawn && valid_pointer(localPlayerController)) {
-			/*FRotator angles;
-			angles.pitch = 89.0f;
-			angles.yaw = 0.0f;
-			angles.roll = 0.0f;*/
+		if (settings.Aimbot && success && targetPawn && valid_pointer(PlayerController) && pressed && Pawns) {
 			FRotator angles;
-			if(Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, 66, &angles))
-				Utils::SpoofCall(csr_func, localPlayerController, angles, false);
+			if(Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, 65, &angles))
+				Utils::spoof_call(trampoline, csr_func, PlayerController, angles, false);
 		}
 
 		Render::EndScene(window);

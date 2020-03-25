@@ -6,11 +6,10 @@ struct SETTINGS
 	bool Debug;
 	bool FOV;
 	bool PlayersAround;
-	bool Loop;
-	bool Decrypt;
 	float FOVSize;
 	struct {
-		bool Players;
+		bool BoneESP;
+		bool BOXESP;
 		bool PlayerLines;
 	} ESP;
 };

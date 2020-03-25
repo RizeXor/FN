@@ -130,6 +130,15 @@ static inline ImVec4 operator-(const ImVec4& lhs, const ImVec4& rhs) { return Im
 static inline ImVec4 operator*(const ImVec4& lhs, const ImVec4& rhs) { return ImVec4(lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*rhs.z, lhs.w*rhs.w); }
 #endif
 
+static float sqrtf_custom3(float n)
+	{
+		static union { int i; float f; } u;
+
+		u.i = 0x5F375A86 - (*(int*)&n >> 1);
+
+		return (int(3) - n * u.f * u.f) * n * u.f * 0.5f;
+	}
+
 static inline int    ImMin(int lhs, int rhs) { return lhs < rhs ? lhs : rhs; }
 static inline int    ImMax(int lhs, int rhs) { return lhs >= rhs ? lhs : rhs; }
 static inline float  ImMin(float lhs, float rhs) { return lhs < rhs ? lhs : rhs; }
@@ -149,7 +158,7 @@ static inline ImVec2 ImLerp(const ImVec2& a, const ImVec2& b, const ImVec2& t) {
 static inline ImVec4 ImLerp(const ImVec4& a, const ImVec4& b, float t) { return ImVec4(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.w + (b.w - a.w) * t); }
 static inline float  ImLengthSqr(const ImVec2& lhs) { return lhs.x*lhs.x + lhs.y*lhs.y; }
 static inline float  ImLengthSqr(const ImVec4& lhs) { return lhs.x*lhs.x + lhs.y*lhs.y + lhs.z*lhs.z + lhs.w*lhs.w; }
-static inline float  ImInvLength(const ImVec2& lhs, float fail_value) { float d = lhs.x*lhs.x + lhs.y*lhs.y; if (d > 0.0f) return 1.0f / sqrtf(d); return fail_value; }
+static inline float  ImInvLength(const ImVec2& lhs, float fail_value) { float d = lhs.x*lhs.x + lhs.y*lhs.y; if (d > 0.0f) return 1.0f / sqrtf_custom3(d); return fail_value; }
 static inline float  ImFloor(float f) { return (float)(int)f; }
 static inline ImVec2 ImFloor(const ImVec2& v) { return ImVec2((float)(int)v.x, (float)(int)v.y); }
 static inline float  ImDot(const ImVec2& a, const ImVec2& b) { return a.x * b.x + a.y * b.y; }

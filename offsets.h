@@ -12,48 +12,20 @@ namespace Offsets {
 	extern DWORD GetBoneMatrix;
 	extern DWORD ClientSetRotation;
 
-	namespace Engine {
-
-		namespace World {
-			extern DWORD OwningGameInstance;
-			extern DWORD Levels;
-		}
-
-		namespace Level {
-			extern DWORD AActors;
-		}
-
-		namespace GameInstance {
-			extern DWORD LocalPlayers;
-		}
-
-		namespace Player {
-			extern DWORD PlayerController;
-		}
-
-		namespace PlayerController {
-			extern DWORD AcknowledgedPawn;
-			extern DWORD PlayerCameraManager;
-		}
-
-		namespace Pawn {
-			extern DWORD PlayerState;
-			extern DWORD SkeletalMeshComponent;
-		}
-
-		namespace PlayerState {
-			extern PVOID GetPlayerName;
-		}
-
-		namespace Actor {
-			extern DWORD RootComponent;
-		}
-
-		namespace SceneComponent {
-			extern DWORD RelativeLocation;
-			extern DWORD ComponentVelocity;
-		}
-	}
+	extern DWORD OwningGameInstance;
+	extern DWORD LocalPlayers;
+	extern DWORD AActors;
+	extern DWORD AcknowledgedPawn;
+	extern DWORD PlayerCameraManager;
+	extern DWORD PlayerController;
+	extern DWORD RootComponent;
+	extern DWORD Levels;
+	extern DWORD RelativeLocation;
+	extern DWORD SkeletalMeshComponent;
+	extern DWORD LocalPlayerPos;
+	extern DWORD PersistentLevel;
+	extern DWORD PlayerState;
+	extern DWORD TeamIndex;
 
 	BOOLEAN Initialize();
 }

@@ -87,7 +87,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>.\imgui;.\minhook;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>.\minhook;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
-    <TargetName>fdgdfgfg</TargetName>
+    <TargetName>hf43d</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -144,14 +144,13 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;EXAMPLE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>Default</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -169,6 +168,11 @@
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="MinHook\src\buffer.c" />
+    <ClCompile Include="MinHook\src\hde\hde32.c" />
+    <ClCompile Include="MinHook\src\hde\hde64.c" />
+    <ClCompile Include="MinHook\src\hook.c" />
+    <ClCompile Include="MinHook\src\trampoline.c" />
     <ClCompile Include="offsets.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="settings.cpp" />
@@ -183,6 +187,13 @@
     <ClInclude Include="imgui\stb_rect_pack.h" />
     <ClInclude Include="imgui\stb_textedit.h" />
     <ClInclude Include="imgui\stb_truetype.h" />
+    <ClInclude Include="MinHook\src\buffer.h" />
+    <ClInclude Include="MinHook\src\hde\hde32.h" />
+    <ClInclude Include="MinHook\src\hde\hde64.h" />
+    <ClInclude Include="MinHook\src\hde\pstdint.h" />
+    <ClInclude Include="MinHook\src\hde\table32.h" />
+    <ClInclude Include="MinHook\src\hde\table64.h" />
+    <ClInclude Include="MinHook\src\trampoline.h" />
     <ClInclude Include="offsets.h" />
     <ClInclude Include="render.h" />
     <ClInclude Include="settings.h" />

@@ -8,10 +8,9 @@ namespace Settings {
 		settings.FOV = true;
 		settings.FOVSize = 150.0f;
 		settings.PlayersAround = true;
-		settings.Loop = true;
-		settings.Decrypt = true;
-		settings.ESP.Players = true;
-		settings.ESP.PlayerLines = true;
+		settings.ESP.BoneESP = true;
+		settings.ESP.BOXESP = true;
+		settings.ESP.PlayerLines = false;
 
 		return true;
 	}

@@ -5,116 +5,6 @@
 ULONGLONG GetBoneMatrixAddress = 0;
 
 namespace Utils {
-	void decrypt_name(uint64_t id, char* outbuf, int outbuf_size)
-	{
-		int v20 = 0;
-		uint64_t game_base = 0;
-		unsigned __int32 v6 = 0;
-		unsigned __int64* GObjects = NULL;
-		unsigned short* v12 = NULL;
-
-		v20 = (unsigned __int16)id;
-
-		game_base = (uint64_t)GetModuleHandleA(nullptr);
-
-		v6 = id >> 16;
-
-		GObjects = (unsigned __int64*)(game_base + Offsets::UObject);
-		//v12 Get FNameEntry?
-		v12 = (unsigned short*)(GObjects[(unsigned int)v6 + 2] + (unsigned int)(2 * v20));
-
-		if (valid_pointer((void*)v12))
-		{
-			int str_size = (unsigned __int64)*v12 >> 6;
-
-			if (str_size > outbuf_size - 1)
-				return;
-
-			memcpy(outbuf, v12 + 1, str_size);
-
-			void* (__fastcall * decrypt_func)(void*, int) = (void* (__fastcall*)(void*, int))(game_base + Offsets::DecryptFunc);
-
-			decrypt_func((void*)outbuf, str_size);
-
-			outbuf[(unsigned __int64)(unsigned __int16)*v12 >> 6] = 0;
-		}
-	}
-
-	/*VOID ToMatrixWithScale(float* in, float out[4][4]) {
-		auto* rotation = &in[0];
-		auto* translation = &in[4];
-		auto* scale = &in[8];
-
-		out[3][0] = translation[0];
-		out[3][1] = translation[1];
-		out[3][2] = translation[2];
-
-		auto x2 = rotation[0] + rotation[0];
-		auto y2 = rotation[1] + rotation[1];
-		auto z2 = rotation[2] + rotation[2];
-
-		auto xx2 = rotation[0] * x2;
-		auto yy2 = rotation[1] * y2;
-		auto zz2 = rotation[2] * z2;
-		out[0][0] = (1.0f - (yy2 + zz2)) * scale[0];
-		out[1][1] = (1.0f - (xx2 + zz2)) * scale[1];
-		out[2][2] = (1.0f - (xx2 + yy2)) * scale[2];
-
-		auto yz2 = rotation[1] * z2;
-		auto wx2 = rotation[3] * x2;
-		out[2][1] = (yz2 - wx2) * scale[2];
-		out[1][2] = (yz2 + wx2) * scale[1];
-
-		auto xy2 = rotation[0] * y2;
-		auto wz2 = rotation[3] * z2;
-		out[1][0] = (xy2 - wz2) * scale[1];
-		out[0][1] = (xy2 + wz2) * scale[0];
-
-		auto xz2 = rotation[0] * z2;
-		auto wy2 = rotation[3] * y2;
-		out[2][0] = (xz2 + wy2) * scale[2];
-		out[0][2] = (xz2 - wy2) * scale[0];
-
-		out[0][3] = 0.0f;
-		out[1][3] = 0.0f;
-		out[2][3] = 0.0f;
-		out[3][3] = 1.0f;
-	}
-
-	VOID MultiplyMatrices(float a[4][4], float b[4][4], float out[4][4]) {
-		for (auto r = 0; r < 4; ++r) {
-			for (auto c = 0; c < 4; ++c) {
-				auto sum = 0.0f;
-
-				for (auto i = 0; i < 4; ++i) {
-					sum += a[r][i] * b[i][c];
-				}
-
-				out[r][c] = sum;
-			}
-		}
-	}
-
-	VOID GetBoneLocation(float compMatrix[4][4], PVOID bones, DWORD index, float out[3]) {
-		float boneMatrix[4][4];
-		ToMatrixWithScale((float*)((PBYTE)bones + (index * 0x30)), boneMatrix);
-
-		float result[4][4];
-		MultiplyMatrices(boneMatrix, compMatrix, result);
-
-		out[0] = result[3][0];
-		out[1] = result[3][1];
-		out[2] = result[3][2];
-	}
-
-	float Normalize(float angle) {
-		float a = (float)fmod(fmod(angle, 360.0) + 360.0, 360.0);
-		if (a > 180.0f) {
-			a -= 360.0f;
-		}
-		return a;
-	}*/
-
 	float Normalize(float angle) {
 		float a = (float)fmod(fmod(angle, 360.0) + 360.0, 360.0);
 		if (a > 180.0f) {
@@ -146,7 +36,7 @@ namespace Utils {
 		y = abs(cam_location.y - vec.y);
 		z = abs(cam_location.z - vec.z);
 
-		distance = Utils::SpoofCall(sqrtf, x * x +  y * y + z * z);
+		distance = sqrtf(x * x +  y * y + z * z);
 
 		pos.x = vec.x - cam_location.x;
 		pos.y = vec.y - cam_location.y;
@@ -229,14 +119,14 @@ namespace Utils {
 		return Screenlocation;
 	}
 
-	BOOL GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out) {
+	bool GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out) {
 		ULONGLONG ActorMesh = 0;
 		FMatrix matrix;
 		FMatrix* tmp = nullptr;
 
-		ActorMesh = *(ULONGLONG*)(Actor + Offsets::Engine::Pawn::SkeletalMeshComponent);
+		ActorMesh = *(ULONGLONG*)(Actor + Offsets::SkeletalMeshComponent);
 		if (!valid_pointer((void*)ActorMesh)) {
-			return FALSE;
+			return false;
 		}
 
 		FMatrix* (__fastcall * func)(void*, void*, int) = (FMatrix * (__fastcall *)(void*, void*, int))GetBoneMatrixAddress;
@@ -246,15 +136,13 @@ namespace Utils {
 		Out->y = matrix.WPlane.y;
 		Out->z = matrix.WPlane.z;
 
-		return TRUE;
+		return true;
 	}
 
 	BOOLEAN Initialize()
 	{
-		// CreateConsole();
-
 		ULONGLONG Base = (ULONGLONG)GetModuleHandleA(nullptr);
-		GetBoneMatrixAddress = (Base + 0x3F968A0);
+		GetBoneMatrixAddress = (Base + 0x3F97490);
 
 		/*GetBoneMatrixAddress = (ULONGLONG)FindPattern(
 			XorStr("\x48\x8B\xC4\x55\x53\x56\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x0F\x29\x78\xB8\x33\xF6").c_str(), 
@@ -296,11 +184,5 @@ namespace Utils {
 		GetModuleInformation(GetCurrentProcess(), GetModuleHandle(0), &info, sizeof(info));
 
 		return FindPattern(info.lpBaseOfDll, info.SizeOfImage, pattern, mask);
-	}
-
-	VOID CreateConsole() {
-		AllocConsole();
-		FILE* f;
-		freopen_s(&f, "CONOUT$", "w", stdout);
 	}
 }
