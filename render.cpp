@@ -288,10 +288,10 @@ namespace Render {
 						bot = true;
 					}
 
-					auto EnemyTeamState = ReadPtr(Actor, Offsets::PlayerState);
-					if (!valid_pointer(EnemyTeamState)) continue;
+					auto ActorTeamState = ReadPtr(Actor, Offsets::PlayerState);
+					if (!valid_pointer(ActorTeamState)) continue;
 
-					auto ActorTeamIndex = *(int*)(EnemyTeamState + Offsets::TeamIndex);
+					auto ActorTeamIndex = *(int*)(ActorTeamState + Offsets::TeamIndex);
 
 					FVector neck;
 					if (!Utils::GetBoneMatrix(Actor, 65, &neck))
@@ -302,6 +302,7 @@ namespace Render {
 					float minY = FLT_MAX;
 					float maxY = -FLT_MAX;
 
+					//bot color
 					auto color = ImGui::GetColorU32({ 0.0f, 0.0f, 1.0f, 1.0f });
 					if(TeamIndex == ActorTeamIndex)
 						color = ImGui::GetColorU32({ 0.0f, 1.0f, 0.0f, 1.0f });

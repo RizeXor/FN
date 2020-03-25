@@ -58,7 +58,7 @@ namespace Offsets {
 		PersistentLevel = 0x30;
 
 		PlayerState = 0x238;
-		TeamIndex = 0x260;
+		TeamIndex = 0xE60;
 
 		return TRUE;
 	}
