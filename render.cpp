@@ -18,6 +18,7 @@ bool pressed = false;
 PVOID trampoline = 0;
 ULONGLONG GetObjectNameAddr = 0;
 void(__fastcall * csr_func)(uint64_t, FRotator, bool) = nullptr;
+bool(__fastcall* LineOfSightTo)(ULONGLONG, ULONGLONG, FVector*) = nullptr;
 
 namespace Render {
 	BOOLEAN showMenu = FALSE;
@@ -69,6 +70,9 @@ namespace Render {
 			if (settings.FOV) {
 				ImGui::SliderFloat(XorStr("aim-fov##slider").c_str(), &settings.FOVSize, 0.0f, 1000.0f, XorStr("%.2f").c_str());
 			}
+
+			ImGui::ColorEdit4(XorStr("NotVisibleColor").c_str(), settings.NotVisibleColor);
+			ImGui::ColorEdit4(XorStr("BotColor").c_str(), settings.BotColor);
 
 			ImGui::Text(XorStr("Debug:").c_str());
 			if (!settings.Debug) {
@@ -139,6 +143,14 @@ namespace Render {
 		//trampoline = (PVOID)((ULONGLONG)Base + 0x22702c0);
 		trampoline = (PVOID)Utils::FindPattern("\x41\xFF\x26", "xxx");
 		GetObjectNameAddr = ((ULONGLONG)Base + Offsets::GetObjectName);
+
+		auto addr = Utils::FindPattern("\x40\x55\x53\x56\x57\x48\x8D\x6C\x24\x00\x48\x81\xEC\x00\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x45\xE0\x49", "xxxxxxxxx?xxx????xxx????xxxxxxxx");
+		if (!addr) {
+			MessageBox(0, XorStr(L"Failed to find LineOfSightTo").c_str(), XorStr(L"Failure").c_str(), 0);
+			return;
+		}
+
+		LineOfSightTo = reinterpret_cast<decltype(LineOfSightTo)>(addr);
 	}
 
 	void DecryptCamera(ULONGLONG PlayerCameraManager) {
@@ -297,28 +309,28 @@ namespace Render {
 					if (!Utils::GetBoneMatrix(Actor, 65, &neck))
 						continue;
 
+					FVector chest;
+					if (!Utils::GetBoneMatrix(Actor, 36, &chest))
+						continue;
+
 					float minX = FLT_MAX;
 					float maxX = -FLT_MAX;
 					float minY = FLT_MAX;
 					float maxY = -FLT_MAX;
 
 					//bot color
-					auto color = ImGui::GetColorU32({ 0.0f, 0.0f, 1.0f, 1.0f });
+					auto color = ImGui::GetColorU32({ settings.BotColor[0], settings.BotColor[1], settings.BotColor[2], settings.BotColor[3] });
 					if(TeamIndex == ActorTeamIndex)
 						color = ImGui::GetColorU32({ 0.0f, 1.0f, 0.0f, 1.0f });
 					else if(!bot)
 						color = ImGui::GetColorU32({ 1.0f, 0.0f, 0.0f, 1.0f });
 
-					FVector2D worldPawnPos = Utils::WorldToScreen(neck, myinfo);
+					FVector2D worldPawnPos = Utils::WorldToScreen(chest, myinfo);
 
 					if (settings.ESP.BoneESP) {
 						//Top
 						FVector head;
 						if (!Utils::GetBoneMatrix(Actor, 66, &head))
-							continue;
-
-						FVector chest;
-						if (!Utils::GetBoneMatrix(Actor, 36, &chest))
 							continue;
 
 						FVector pelvis;
@@ -415,12 +427,24 @@ namespace Render {
 						auto topLeft = ImVec2(minX - 3.0f, minY - 3.0f);
 						auto bottomRight = ImVec2(maxX + 3.0f, maxY + 3.0f);
 
-						window.DrawList->AddRectFilled(topLeft, bottomRight, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 0.10f }));
-						window.DrawList->AddRect(topLeft, bottomRight, ImGui::GetColorU32({ 0.0f, 0.50f, 0.90f, 1.0f }), 0.5, 15, 1.5f);
+						FVector ViewTarget(0.0f, 0.0f, 0.0f);
+						if (!Utils::spoof_call(trampoline, LineOfSightTo, PlayerController, Actor, &ViewTarget)) {
+						//if (true) {
+							/*auto mycolor = ImGui::GetColorU32({ settings.NotVisibleColor[0],  settings.NotVisibleColor[1],
+								 settings.NotVisibleColor[2],  settings.NotVisibleColor[3]*/
+							window.DrawList->AddRectFilled(topLeft, bottomRight, ImGui::GetColorU32({ settings.NotVisibleColor[0],  settings.NotVisibleColor[1],
+								 settings.NotVisibleColor[2],  settings.NotVisibleColor[3] }));
+							window.DrawList->AddRect(topLeft, bottomRight, ImGui::GetColorU32({ 0.0f, 0.50f, 0.00f, 1.0f }), 0.5, 15, 1.5f);
+						}
+						else
+						{
+							window.DrawList->AddRectFilled(topLeft, bottomRight, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 0.10f }));
+							window.DrawList->AddRect(topLeft, bottomRight, ImGui::GetColorU32({ 0.0f, 0.50f, 0.90f, 1.0f }), 0.5, 15, 1.5f);
+						}
 					}
 
 					if (settings.ESP.PlayerLines) {
-						window.DrawList->AddLine(ImVec2(960, height),
+						window.DrawList->AddLine(ImVec2(960, 840),
 							ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 1.0f, 1.0f, 1.0f }));
 					}
 
@@ -446,7 +470,7 @@ namespace Render {
 				}
 			}
 
-			if (settings.Aimbot && closestPawn && GetAsyncKeyState(VK_RBUTTON) < 0 && GetForegroundWindow() == hWnd && !pressed) {
+			if (settings.Aimbot && closestPawn && GetAsyncKeyState(VK_RBUTTON) < 0 && GetForegroundWindow() == hWnd) {
 				targetPawn = closestPawn;
 				pressed = true;
 			}
@@ -470,7 +494,7 @@ namespace Render {
 
 		if (settings.Aimbot && success && targetPawn && valid_pointer(PlayerController) && pressed && Pawns) {
 			FRotator angles;
-			if(Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, 65, &angles))
+			if(Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, 36, &angles))
 				Utils::spoof_call(trampoline, csr_func, PlayerController, angles, false);
 		}
 

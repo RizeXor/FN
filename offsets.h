@@ -10,6 +10,8 @@ namespace Offsets {
 	extern DWORD UObject;
 	extern DWORD DecryptFunc;
 	extern DWORD GetBoneMatrix;
+	extern DWORD GetNameByIndex;
+	extern DWORD LineOfSightTo;
 	extern DWORD ClientSetRotation;
 
 	extern DWORD OwningGameInstance;

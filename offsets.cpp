@@ -5,10 +5,13 @@ namespace Offsets {
 	DWORD FnFree = 0x2a6f280;
 	DWORD GetObjectName = 0x4115060;
 	DWORD CameraDecrypt = 0x660;
-	DWORD UObject = 0x7ec2110;
+	DWORD UObject = 0x7fb2728;
 	DWORD DecryptFunc = 0x1FD26B0;
 	DWORD GetBoneMatrix = 0x3F97490;
 	DWORD ClientSetRotation = 0x628;
+	// /Script/Engine.Controller.LineOfSightTo
+	DWORD LineOfSightTo = 0x678;
+	DWORD GetNameByIndex = 0x2b71fa0;
 	
 	DWORD OwningGameInstance = 0;
 	DWORD LocalPlayers = 0;

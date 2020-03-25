@@ -12,6 +12,8 @@ struct SETTINGS
 		bool BOXESP;
 		bool PlayerLines;
 	} ESP;
+	float NotVisibleColor[4];
+	float BotColor[4];
 };
 
 extern SETTINGS settings;

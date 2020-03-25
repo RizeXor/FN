@@ -5,14 +5,6 @@
 ULONGLONG GetBoneMatrixAddress = 0;
 
 namespace Utils {
-	float Normalize(float angle) {
-		float a = (float)fmod(fmod(angle, 360.0) + 360.0, 360.0);
-		if (a > 180.0f) {
-			a -= 360.0f;
-		}
-		return a;
-	}
-
 	bool get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out)
 	{
 		FVector vec;
@@ -142,7 +134,7 @@ namespace Utils {
 	BOOLEAN Initialize()
 	{
 		ULONGLONG Base = (ULONGLONG)GetModuleHandleA(nullptr);
-		GetBoneMatrixAddress = (Base + 0x3F97490);
+		GetBoneMatrixAddress = (Base + Offsets::GetBoneMatrix);
 
 		/*GetBoneMatrixAddress = (ULONGLONG)FindPattern(
 			XorStr("\x48\x8B\xC4\x55\x53\x56\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x0F\x29\x78\xB8\x33\xF6").c_str(), 
