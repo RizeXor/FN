@@ -22,6 +22,7 @@ namespace Utils {
 	bool GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out);
 	FVector2D WorldToScreen(FVector Location, FMinimalViewInfo info);
 	bool get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out);
+	bool LoadStyle();
 
 	static float sqrtf_custom(float n)
 	{

@@ -19,6 +19,7 @@ PVOID trampoline = 0;
 ULONGLONG GetObjectNameAddr = 0;
 void(__fastcall * csr_func)(uint64_t, FRotator, bool) = nullptr;
 bool(__fastcall* LineOfSightTo)(ULONGLONG, ULONGLONG, FVector*) = nullptr;
+int tabb = 0;
 
 namespace Render {
 	BOOLEAN showMenu = FALSE;
@@ -45,6 +46,35 @@ namespace Render {
 		return *ImGui::GetCurrentWindow();
 	}
 
+	void AddTab(size_t Index, const char* Text)
+	{
+		static const size_t TabWidth = 100;
+		static const size_t TabHeight = 20;
+
+		ImGui::PushID(Index);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1);
+
+		if (Index == 1)
+			ImGui::SameLine(Index * (TabWidth + 5));
+		else if (Index > 1)
+			ImGui::SameLine(Index * (TabWidth + 4 - Index));
+
+		if (tabb == Index)
+			ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor(15, 15, 15));			// Color on tab open
+		else
+			ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor(30, 30, 30));			// Color on tab closed
+
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor(40, 40, 40));			// Color on mouse hover in tab
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor(35, 35, 35));			// Color on click tab
+
+		if (ImGui::Button(Text, ImVec2(TabWidth, TabHeight)))	// If tab clicked
+			tabb = Index;
+
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor(3);
+		ImGui::PopID();
+	}
+
 	VOID EndScene(ImGuiWindow& window) {
 		window.DrawList->PushClipRectFullScreen();
 		ImGui::End();
@@ -55,33 +85,37 @@ namespace Render {
 
 		if (showMenu) {
 			ImGui::Begin(XorStr("##menu").c_str(), reinterpret_cast<bool*>(true), ImGuiWindowFlags_NoCollapse);
-			ImGui::SetWindowSize(ImVec2(500, 600), ImGuiCond_FirstUseEver);
-			ImGui::Text(XorStr("GayNiteFN").c_str());
+			int imgui_width = 314, imgui_height = 450;
+			ImGui::SetWindowSize(ImVec2(imgui_width, imgui_height), ImGuiCond_FirstUseEver);
+			ImGui::Text(XorStr("PureSkill").c_str());
 
-			ImGui::Text(XorStr("Aimbot:").c_str());
-			ImGui::Checkbox(XorStr("Aimbot").c_str(), &settings.Aimbot);
+			AddTab(0, "Aimbot");
+			AddTab(1, "Visuals");
+			AddTab(2, "Debug");
 
-			ImGui::Text(XorStr("Visuals:").c_str());
-			ImGui::Checkbox(XorStr("Player Lines").c_str(), &settings.ESP.PlayerLines);
-			ImGui::Checkbox(XorStr("Bone ESP").c_str(), &settings.ESP.BoneESP);
-			ImGui::Checkbox(XorStr("Box ESP").c_str(), &settings.ESP.BOXESP);
-			ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
-			ImGui::Checkbox(XorStr("Players Around").c_str(), &settings.PlayersAround);
-			if (settings.FOV) {
-				ImGui::SliderFloat(XorStr("aim-fov##slider").c_str(), &settings.FOVSize, 0.0f, 1000.0f, XorStr("%.2f").c_str());
+			if (tabb == 0) {
+				ImGui::Checkbox(XorStr("Aimbot").c_str(), &settings.Aimbot);
 			}
-
-			ImGui::ColorEdit4(XorStr("NotVisibleColor").c_str(), settings.NotVisibleColor);
-			ImGui::ColorEdit4(XorStr("BotColor").c_str(), settings.BotColor);
-
-			ImGui::Text(XorStr("Debug:").c_str());
-			if (!settings.Debug) {
+			else if (tabb == 1) {
+				ImGui::Checkbox(XorStr("Player Lines").c_str(), &settings.ESP.PlayerLines);
+				ImGui::Checkbox(XorStr("Bone ESP").c_str(), &settings.ESP.BoneESP);
+				ImGui::Checkbox(XorStr("Box ESP").c_str(), &settings.ESP.BOXESP);
+				ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
+				ImGui::Checkbox(XorStr("Players Around").c_str(), &settings.PlayersAround);
+				if (settings.FOV) {
+					ImGui::SliderFloat(XorStr("Aimbot FOV##slider").c_str(), &settings.FOVSize, 0.0f, 1000.0f, XorStr("%.2f").c_str());
+				}
+				ImGui::ColorEdit4(XorStr("NotVisibleColor").c_str(), settings.NotVisibleColor, ImGuiColorEditFlags_NoInputs);
+				ImGui::ColorEdit4(XorStr("BotColor").c_str(), settings.BotColor, ImGuiColorEditFlags_NoInputs);
+			}
+			else if (tabb == 2) {
+				ImGui::Text(XorStr("Debug:").c_str());
 				ImGui::Text(XorStr("Pitch -> %f\n").c_str(), Pitch);
 				ImGui::Text(XorStr("Pawns -> %lu\n").c_str(), Pawns);
-				ImGui::Text(XorStr("tramp -> 0x%llx\n").c_str(), trampoline);
-				char buffer[40] = { 0 };
+				ImGui::Text(XorStr("Trampoline -> 0x%llx\n").c_str(), trampoline);
+				/*char buffer[40] = { 0 };
 				sprintf_s(buffer, "%llx\n", UworldAddress);
-				ImGui::InputText(XorStr("UWorld").c_str(), buffer, 40);
+				ImGui::InputText(XorStr("UWorld").c_str(), buffer, 40);*/
 			}
 
 			ImGui::End();
@@ -205,9 +239,13 @@ namespace Render {
 			}, reinterpret_cast<LPARAM>(&targetWindow));
 
 			ImGui_ImplDX11_Init(targetWindow, device, immediateContext);
+			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\Verdana.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+			IM_ASSERT(font != NULL);
 			ImGui_ImplDX11_CreateDeviceObjects();
 
 			InitAddresses();
+			Utils::LoadStyle();
 		}
 
 		immediateContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
@@ -304,6 +342,10 @@ namespace Render {
 					if (!valid_pointer(ActorTeamState)) continue;
 
 					auto ActorTeamIndex = *(int*)(ActorTeamState + Offsets::TeamIndex);
+
+					if (TeamIndex == ActorTeamIndex) {
+						continue;
+					}
 
 					FVector neck;
 					if (!Utils::GetBoneMatrix(Actor, 65, &neck))
@@ -446,11 +488,6 @@ namespace Render {
 					if (settings.ESP.PlayerLines) {
 						window.DrawList->AddLine(ImVec2(960, 840),
 							ImVec2(worldPawnPos.x, worldPawnPos.y), ImGui::GetColorU32({ 1.0f, 1.0f, 1.0f, 1.0f }));
-					}
-
-					if (TeamIndex == ActorTeamIndex) {
-						Pawns++;
-						continue;
 					}
 
 					if (settings.Aimbot) {
