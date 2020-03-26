@@ -262,7 +262,7 @@ namespace Render {
 		auto& window = BeginScene();
 
 		if (settings.FOV) {
-			window.DrawList->AddCircle(ImVec2(960, 540), settings.FOVSize, ImGui::GetColorU32({ 0.0f, 0.0f, 0.0f, 1.0f }), 64, 1.5f);
+			window.DrawList->AddCircle(ImVec2(960, 540), settings.FOVSize, ImGui::GetColorU32({ 0.66f, 0.58f, 0.76f, 1.0f }), 64, 1.5f);
 		}
 
 		auto success = FALSE;
@@ -515,7 +515,7 @@ namespace Render {
 						snprintf(modified, sizeof(modified), XorStr("%s\n[%dm]").c_str(), "BOT", (int)(DistanceCalc));
 
 						auto size = ImGui::GetFont()->CalcTextSizeA(window.DrawList->_Data->FontSize, FLT_MAX, 0, modified);
-						window.DrawList->AddText(ImVec2(RootCompPos2D.x - size.x / 2.0f, (bottomRight.y + 12.0f) - size.y / 2.0f), color, modified);
+						window.DrawList->AddText(ImVec2(RootCompPos2D.x - size.x / 2.0f, (bottomRight.y + 15.0f) - size.y / 2.0f), color, modified);
 					}
 					else if (!bot && settings.MarkBots) {
 						float DistanceCalc = sqrt((pos.x - LocalPlayerPos.x) * (pos.x - LocalPlayerPos.x) + (pos.y - LocalPlayerPos.y) * (pos.y - LocalPlayerPos.y) + (pos.z - LocalPlayerPos.z) * (pos.z - LocalPlayerPos.z));
@@ -525,7 +525,7 @@ namespace Render {
 						snprintf(modified, sizeof(modified), XorStr("%s\n[%dm]").c_str(), "Player", (int)(DistanceCalc));
 
 						auto size = ImGui::GetFont()->CalcTextSizeA(window.DrawList->_Data->FontSize, FLT_MAX, 0, modified);
-						window.DrawList->AddText(ImVec2(RootCompPos2D.x - size.x / 2.0f, (bottomRight.y + 12.0f) - size.y / 2.0f), color, modified);
+						window.DrawList->AddText(ImVec2(RootCompPos2D.x - size.x / 2.0f, (bottomRight.y + 15.0f) - size.y / 2.0f), color, modified);
 					}
 
 					if (settings.Aimbot) {
@@ -555,8 +555,9 @@ namespace Render {
 			}
 
 			if (settings.PlayersAround) {
-				char EnemiesBuffer[64];
-				sprintf_s(EnemiesBuffer, XorStr("Enemies: %u %f %f").c_str(), Pawns, myinfo.Rotation.pitch, LocalPlayerPos.z);
+				char EnemiesBuffer[32];
+				//sprintf_s(EnemiesBuffer, XorStr("Enemies: %u %f %f").c_str(), Pawns, myinfo.Rotation.pitch, LocalPlayerPos.z);
+				sprintf_s(EnemiesBuffer, XorStr("Enemies: %u").c_str(), Pawns);
 				window.DrawList->AddText(ImVec2(960, 100), ImGui::GetColorU32({ 0.66f, 0.58f, 0.76f, 1.0f }), EnemiesBuffer);
 			}
 

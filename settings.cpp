@@ -7,7 +7,7 @@ namespace Settings {
 		settings.Aimbot = true;
 		settings.FOV = true;
 		settings.PlayersAround = true;
-		settings.ESP.BoneESP = true;
+		settings.ESP.BoneESP = false;
 		settings.ESP.BoxEsp = true;
 		settings.ESP.PlayerLines = false;
 		settings.MarkBots = true;
@@ -20,7 +20,7 @@ namespace Settings {
 		settings.NotVisibleColor[0] = 0.0f;
 		settings.NotVisibleColor[1] = 0.0f;
 		settings.NotVisibleColor[2] = 0.0f;
-		settings.NotVisibleColor[3] = 0.65f;
+		settings.NotVisibleColor[3] = 0.40f;
 
 		//0.66f, 0.58f, 0.76f, 1.0f
 		settings.BotColor[0] = 0.66f;
