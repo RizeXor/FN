@@ -6,11 +6,14 @@ struct SETTINGS
 	bool Debug;
 	bool FOV;
 	bool PlayersAround;
+	bool MarkBots;
 	float FOVSize;
 	struct {
 		bool BoneESP;
-		bool BOXESP;
+		bool BoxEsp;
 		bool PlayerLines;
+		bool PlayerLineToBots;
+		bool PlayerLineToPlayers;
 	} ESP;
 	float NotVisibleColor[4];
 	float BotColor[4];
