@@ -1,13 +1,19 @@
 #pragma once
 
+#include <string>
+
 struct SETTINGS
 {
-	bool Aimbot;
+	bool MemoryAimbot;
 	bool Debug;
 	bool FOV;
 	bool PlayersAround;
 	bool MarkBots;
 	float FOVSize;
+	struct _Aimbot
+	{
+		std::string BoneName;
+	} Aimbot;
 	struct {
 		bool BoneESP;
 		bool BoxEsp;

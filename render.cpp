@@ -20,6 +20,7 @@ ULONGLONG GetObjectNameAddr = 0;
 void(__fastcall * csr_func)(uint64_t, FRotator, bool) = nullptr;
 bool(__fastcall* LineOfSightTo)(ULONGLONG, ULONGLONG, FVector*) = nullptr;
 int tabb = 0;
+int AimbotBoneIndex = 36;
 
 namespace Render {
 	BOOLEAN showMenu = FALSE;
@@ -94,10 +95,31 @@ namespace Render {
 			AddTab(2, "Debug");
 
 			if (tabb == 0) {
-				ImGui::Checkbox(XorStr("Aimbot").c_str(), &settings.Aimbot);
+				ImGui::Checkbox(XorStr("Aimbot").c_str(), &settings.MemoryAimbot);
 				ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
 				if (settings.FOV) {
 					ImGui::SliderFloat(XorStr("Aimbot FOV##slider").c_str(), &settings.FOVSize, 0.0f, 1000.0f, XorStr("%.2f").c_str());
+				}
+				string items[] = { "Chest", "Neck", "Head" };
+				ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
+
+				if (ImGui::BeginCombo("Aimbot Bone", settings.Aimbot.BoneName.c_str()))
+				{
+					for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+					{
+						bool is_selected = (settings.Aimbot.BoneName == items[n]);
+						if (ImGui::Selectable(items[n].c_str(), is_selected))
+							settings.Aimbot.BoneName = items[n];
+							if (settings.Aimbot.BoneName == "Head")
+								AimbotBoneIndex = 66;
+							else if (settings.Aimbot.BoneName == "Neck")
+								AimbotBoneIndex = 65;
+							else
+								AimbotBoneIndex = 36;
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
 				}
 			}
 			else if (tabb == 1) {
@@ -120,9 +142,6 @@ namespace Render {
 				ImGui::Text(XorStr("Pitch: %f\n").c_str(), Pitch);
 				ImGui::Text(XorStr("Pawns: %u\n").c_str(), Pawns);
 				ImGui::Text(XorStr("Trampoline: 0x%llx\n").c_str(), trampoline);
-				/*char buffer[40] = { 0 };
-				sprintf_s(buffer, "%llx\n", UworldAddress);
-				ImGui::InputText(XorStr("UWorld").c_str(), buffer, 40);*/
 			}
 
 			ImGui::End();
@@ -150,7 +169,7 @@ namespace Render {
 		return CallWindowProc(WndProcOriginal, hwnd, msg, wParam, lParam);
 	}
 
-	VOID AddLine(ImGuiWindow& window, float width, float height, FVector a, FVector b, ImU32 color, float& minX, float& maxX, float& minY, float& maxY) {
+	VOID AddLine(ImGuiWindow& window, FVector a, FVector b, ImU32 color, float& minX, float& maxX, float& minY, float& maxY) {
 		FVector2D ac = Utils::WorldToScreen(a, myinfo);
 		FVector2D bc = Utils::WorldToScreen(b, myinfo);
 		if (true) {
@@ -458,24 +477,32 @@ namespace Render {
 
 					FVector2D worldPawnPos = Utils::WorldToScreen(chest, myinfo);
 
-					AddLine(window, width, height, head, neck, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, neck, pelvis, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, chest, leftShoulder, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, chest, rightShoulder, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, leftShoulder, leftElbow, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, rightShoulder, rightElbow, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, leftElbow, leftHand, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, rightElbow, rightHand, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, pelvis, leftLeg, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, pelvis, rightLeg, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, leftLeg, leftThigh, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, rightLeg, rightThigh, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, leftThigh, leftFoot, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, rightThigh, rightFoot, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, leftFoot, leftFeet, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, rightFoot, rightFeet, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, leftFeet, leftFeetFinger, color, minX, maxX, minY, maxY);
-					AddLine(window, width, height, rightFeet, rightFeetFinger, color, minX, maxX, minY, maxY);
+					AddLine(window, head, neck, color, minX, maxX, minY, maxY);
+					AddLine(window, neck, pelvis, color, minX, maxX, minY, maxY);
+					AddLine(window, chest, leftShoulder, color, minX, maxX, minY, maxY);
+					AddLine(window, chest, rightShoulder, color, minX, maxX, minY, maxY);
+					AddLine(window, leftShoulder, leftElbow, color, minX, maxX, minY, maxY);
+					AddLine(window, rightShoulder, rightElbow, color, minX, maxX, minY, maxY);
+					AddLine(window, leftElbow, leftHand, color, minX, maxX, minY, maxY);
+					AddLine(window, rightElbow, rightHand, color, minX, maxX, minY, maxY);
+					AddLine(window, pelvis, leftLeg, color, minX, maxX, minY, maxY);
+					AddLine(window, pelvis, rightLeg, color, minX, maxX, minY, maxY);
+					AddLine(window, leftLeg, leftThigh, color, minX, maxX, minY, maxY);
+					AddLine(window, rightLeg, rightThigh, color, minX, maxX, minY, maxY);
+					AddLine(window, leftThigh, leftFoot, color, minX, maxX, minY, maxY);
+					AddLine(window, rightThigh, rightFoot, color, minX, maxX, minY, maxY);
+					AddLine(window, leftFoot, leftFeet, color, minX, maxX, minY, maxY);
+					AddLine(window, rightFoot, rightFeet, color, minX, maxX, minY, maxY);
+					AddLine(window, leftFeet, leftFeetFinger, color, minX, maxX, minY, maxY);
+					AddLine(window, rightFeet, rightFeetFinger, color, minX, maxX, minY, maxY);
+
+					/*
+					Circle head esp
+					FVector2D head2D = Utils::WorldToScreen(head, myinfo);
+					FVector2D neck2D = Utils::WorldToScreen(neck, myinfo);
+
+					window.DrawList->AddCircleFilled(ImVec2(head2D.x, head2D.y), ((abs(head2D.y - neck2D.y) + 3.0f)),
+						ImGui::GetColorU32({ 0.66f, 0.58f, 0.76f, 0.5f }), 32);*/
 
 					auto topLeft = ImVec2(minX - 6.0f, minY - 6.0f);
 					auto bottomRight = ImVec2(maxX + 6.0f, maxY + 6.0f);
@@ -528,7 +555,7 @@ namespace Render {
 						window.DrawList->AddText(ImVec2(RootCompPos2D.x - size.x / 2.0f, (bottomRight.y + 15.0f) - size.y / 2.0f), color, modified);
 					}
 
-					if (settings.Aimbot) {
+					if (settings.MemoryAimbot) {
 						float dx = worldPawnPos.x - 960.0f;
 						float dy = worldPawnPos.y - 540.0f;
 						auto dist = sqrtf(dx * dx + dy * dy);
@@ -545,7 +572,7 @@ namespace Render {
 				}
 			}
 
-			if (settings.Aimbot && closestPawn && GetAsyncKeyState(VK_RBUTTON) < 0 && GetForegroundWindow() == hWnd) {
+			if (settings.MemoryAimbot && closestPawn && GetAsyncKeyState(VK_RBUTTON) < 0 && GetForegroundWindow() == hWnd) {
 				targetPawn = closestPawn;
 				pressed = true;
 			}
@@ -568,9 +595,10 @@ namespace Render {
 			targetPawn = NULL;
 		}
 
-		if (settings.Aimbot && success && targetPawn && valid_pointer(PlayerController) && pressed && Pawns) {
+		if (settings.MemoryAimbot && success && targetPawn && valid_pointer(PlayerController) && pressed && Pawns) {
 			FRotator angles;
-			if(Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, 36, &angles))
+
+			if(Utils::get_aim_angles(myinfo.Rotation, myinfo.Location, targetPawn, AimbotBoneIndex, &angles))
 				Utils::spoof_call(trampoline, csr_func, PlayerController, angles, false);
 		}
 

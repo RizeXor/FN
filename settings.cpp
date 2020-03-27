@@ -4,13 +4,15 @@ SETTINGS settings = { 0 };
 
 namespace Settings {
 	bool Initialize() {
-		settings.Aimbot = true;
+		settings.MemoryAimbot = true;
 		settings.FOV = true;
 		settings.PlayersAround = true;
 		settings.ESP.BoneESP = false;
 		settings.ESP.BoxEsp = true;
 		settings.ESP.PlayerLines = false;
 		settings.MarkBots = true;
+
+		settings.Aimbot.BoneName = "Chest";
 
 		settings.ESP.PlayerLineToBots = true;
 		settings.ESP.PlayerLineToPlayers = true;
