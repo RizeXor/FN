@@ -4,6 +4,7 @@
 
 namespace Offsets {
 	extern PVOID* uWorld;
+	extern DWORD UWorld;
 	extern DWORD FnFree;
 	extern DWORD GetObjectName;
 	extern DWORD CameraDecrypt;
@@ -11,7 +12,6 @@ namespace Offsets {
 	extern DWORD DecryptFunc;
 	extern DWORD GetBoneMatrix;
 	extern DWORD GetNameByIndex;
-	extern DWORD LineOfSightTo;
 	extern DWORD ClientSetRotation;
 
 	extern DWORD OwningGameInstance;

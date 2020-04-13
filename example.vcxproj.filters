@@ -63,6 +63,12 @@
     <ClCompile Include="MinHook\src\hde\hde64.c">
       <Filter>Header Files\MinHook\hde</Filter>
     </ClCompile>
+    <ClCompile Include="updater.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -130,6 +136,12 @@
     </ClInclude>
     <ClInclude Include="MinHook\src\hde\table64.h">
       <Filter>Header Files\MinHook\hde</Filter>
+    </ClInclude>
+    <ClInclude Include="updater.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

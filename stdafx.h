@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -23,5 +24,7 @@ using namespace std;
 #include "offsets.h"
 #include "utils.h"
 #include "structs.h"
+#include "updater.h"
+#include "core.h"
 
 #define valid_pointer(pointer) (pointer != NULL && (uint64_t)pointer >= 0x10000 && (uint64_t)pointer >= 0x10000000000 && (uint64_t)pointer < 0x00007FFFFFFEFFFF && (uint64_t)pointer != 0xFFFFFFFF)

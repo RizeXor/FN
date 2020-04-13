@@ -16,13 +16,11 @@
 namespace Utils {
 	BOOLEAN Initialize();
 
-	/*VOID ToMatrixWithScale(float* in, float out[4][4]);
-	VOID GetBoneLocation(float compMatrix[4][4], PVOID bones, DWORD index, float out[3]);
-	VOID CalcAngle(float* src, float* dst, float* angles);*/
-	bool GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out);
-	FVector2D WorldToScreen(FVector Location, FMinimalViewInfo info);
+	bool get_bone_matrix(uint64_t actor, unsigned int index, FVector* Out);
+	FVector2D w2s(FVector Location, FMinimalViewInfo info);
 	bool get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out);
 	bool LoadStyle();
+	const wchar_t* get_name(uint64_t object);
 
 	static float sqrtf_custom(float n)
 	{

@@ -5,6 +5,23 @@
 ULONGLONG GetBoneMatrixAddress = 0;
 
 namespace Utils {
+	const wchar_t* get_name(uint64_t object)
+	{
+		uint64_t base = (uint64_t)GetModuleHandleW(nullptr);
+		auto fGetObjName2 = reinterpret_cast<FString * (__fastcall*)(FString*, uintptr_t)>(base + Offsets::GetObjectName);
+
+		if (!valid_pointer(fGetObjName2))
+			return L"";
+
+		FString result;
+		fGetObjName2(&result, object);
+
+		if (!result.IsValid())
+			return L"";
+
+		return result.c_str();
+	}
+
 	bool get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out)
 	{
 		FVector vec;
@@ -19,7 +36,7 @@ namespace Utils {
 			return false;
 		}
 
-		if (!GetBoneMatrix(aactor, bone, &vec))
+		if (!get_bone_matrix(aactor, bone, &vec))
 		{
 			return false;
 		}
@@ -143,7 +160,7 @@ namespace Utils {
 		return matrix;
 	}
 
-	FVector2D WorldToScreen(FVector WorldLocation, FMinimalViewInfo info)
+	FVector2D w2s(FVector WorldLocation, FMinimalViewInfo info)
 	{
 		FVector2D Screenlocation = FVector2D(0, 0);
 
@@ -173,12 +190,12 @@ namespace Utils {
 		return Screenlocation;
 	}
 
-	bool GetBoneMatrix(ULONGLONG Actor, unsigned int index, FVector* Out) {
-		ULONGLONG ActorMesh = 0;
+	bool get_bone_matrix(uint64_t actor, unsigned int index, FVector* Out) {
+		uint64_t ActorMesh = 0;
 		FMatrix matrix;
 		FMatrix* tmp = nullptr;
 
-		ActorMesh = *(ULONGLONG*)(Actor + Offsets::SkeletalMeshComponent);
+		ActorMesh = *(ULONGLONG*)(actor + Offsets::SkeletalMeshComponent);
 		if (!valid_pointer((void*)ActorMesh)) {
 			return false;
 		}
@@ -198,13 +215,10 @@ namespace Utils {
 		ULONGLONG Base = (ULONGLONG)GetModuleHandleA(nullptr);
 		GetBoneMatrixAddress = (Base + Offsets::GetBoneMatrix);
 
-		/*GetBoneMatrixAddress = (ULONGLONG)FindPattern(
-			XorStr("\x48\x8B\xC4\x55\x53\x56\x57\x41\x54\x41\x56\x41\x57\x48\x8D\x68\xA1\x48\x81\xEC\xE0\x00\x00\x00\x0F\x29\x78\xB8\x33\xF6").c_str(), 
-			XorStr("xxxxxxxxxxxxxxxxxxxxx???xxxxxx").c_str());*/
-
-		/*if (!GetBoneMatrixAddress) {
-			MessageBox(0, XorStr(L"Failed to find bone matrix").c_str(), XorStr(L"dsfsdfsdf").c_str(), 0);
-			return FALSE;
+		/*bool debug = true;
+		if (debug)
+		{
+			cout << "BoneMatrix: 0x" << hex << GetBoneMatrixAddress << endl;
 		}*/
 
 		return TRUE;
