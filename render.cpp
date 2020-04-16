@@ -88,7 +88,7 @@ VOID AddLine(ImGuiWindow& window, FVector a, FVector b, ImU32 color, float& minX
 
 void InitAddresses() {
 	uint64_t Base = (uint64_t)GetModuleHandleW(nullptr);
-	Offsets::trampoline = (PVOID)utils::FindPattern(XorStr("\x41\xFF\x26").c_str(), XorStr("xxx").c_str());
+	Offsets::trampoline = (PVOID)utils::FindPattern(_xor("\x41\xFF\x26").c_str(), _xor("xxx").c_str());
 
 	GetObjectNameAddr = ((ULONGLONG)Base + Offsets::GetObjectName);
 	GetNameByIndexAddr = ((ULONGLONG)Base + Offsets::GetNameByIndex);
@@ -166,7 +166,7 @@ void RenderRect(ImGuiWindow* window, const ImVec2& from, const ImVec2& to, uint3
 void draw_player_warning(ImGuiWindow& window, bool lobby)
 {
 	char player_warning_buffer[64] = { 0 };
-	sprintf_s(player_warning_buffer, sizeof(player_warning_buffer), XorStr("Warning %u players").c_str(), player_list_size);
+	sprintf_s(player_warning_buffer, sizeof(player_warning_buffer), _xor("Warning %u players").c_str(), player_list_size);
 	RenderText(&window, player_warning_buffer, ImVec2(960, 90), 22.0f, 0xFFFF0000, true);
 }
 
@@ -294,8 +294,8 @@ void player_loop(ImGuiWindow& window)
 		AddLine(window, rightFeet, rightFeetFinger, color, minX, maxX, minY, maxY);
 
 		//RenderRect(&window, )
-		player.bot ? RenderText(&window, XorStr("BOT").c_str(), ImVec2(chest_pos_2d.x, chest_pos_2d.y), 12.0f, 0xFFFF0000, true) :
-			RenderText(&window, XorStr("PLAYER").c_str(), ImVec2(chest_pos_2d.x, chest_pos_2d.y), 12.0f, 0xFFFF0000, true);
+		player.bot ? RenderText(&window, _xor("BOT").c_str(), ImVec2(chest_pos_2d.x, chest_pos_2d.y), 12.0f, 0xFFFF0000, true) :
+			RenderText(&window, _xor("PLAYER").c_str(), ImVec2(chest_pos_2d.x, chest_pos_2d.y), 12.0f, 0xFFFF0000, true);
 
 		auto topLeft = ImVec2(minX - 3.0f, minY - 3.0f);
 		auto bottomRight = ImVec2(maxX + 3.0f, maxY + 3.0f);
@@ -334,7 +334,7 @@ void player_loop(ImGuiWindow& window)
 		FVector2D target_pawn_2d = utils::w2s(targget_pawn_loc, myinfo);
 
 		window.DrawList->AddLine(ImVec2(960, 1080 / 2), ImVec2(target_pawn_2d.x, target_pawn_2d.y),
-			ImGui::GetColorU32({ settings.NotVisibleColor[0], settings.NotVisibleColor[1], settings.NotVisibleColor[2], settings.NotVisibleColor[3] }), 2.0f);
+			ImGui::GetColorU32({ 1, 0, 0, 1 }), 3.0f);
 	}
 
 	bool pressed = utils::spoof_call(Offsets::trampoline, GetAsyncKeyState, VK_RBUTTON) < 0;
@@ -529,7 +529,7 @@ namespace Render {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0));
-		ImGui::Begin(XorStr("##scene").c_str(), nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar);
+		ImGui::Begin(_xor("##scene").c_str(), nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar);
 
 		auto& io = ImGui::GetIO();
 		ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
@@ -576,23 +576,23 @@ namespace Render {
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.17f, 0.18f, 0.2f, 1.0f));
 
 		if (showMenu) {
-			ImGui::Begin(XorStr("##menu").c_str(), reinterpret_cast<bool*>(true), ImGuiWindowFlags_NoCollapse);
+			ImGui::Begin(_xor("##menu").c_str(), reinterpret_cast<bool*>(true), ImGuiWindowFlags_NoCollapse);
 			int imgui_width = 314, imgui_height = 450;
 			ImGui::SetWindowSize(ImVec2(imgui_width, imgui_height), ImGuiCond_FirstUseEver);
-			ImGui::TextColored(ImVec4(0.66f, 0.58f, 0.76f, 1.0f), XorStr("PureSkill").c_str());
+			ImGui::TextColored(ImVec4(0.66f, 0.58f, 0.76f, 1.0f), _xor("PureSkill").c_str());
 
-			AddTab(0, XorStr("Aimbot").c_str());
-			AddTab(1, XorStr("Visuals").c_str());
-			AddTab(2, XorStr("Debug").c_str());
+			AddTab(0, _xor("Aimbot").c_str());
+			AddTab(1, _xor("Visuals").c_str());
+			AddTab(2, _xor("Debug").c_str());
 
 			if (tabb == 0) {
-				ImGui::Checkbox(XorStr("Aimbot").c_str(), &settings.MemoryAimbot);
-				ImGui::Checkbox(XorStr("Aimbot FOV").c_str(), &settings.FOV);
+				ImGui::Checkbox(_xor("Aimbot").c_str(), &settings.MemoryAimbot);
+				ImGui::Checkbox(_xor("Aimbot FOV").c_str(), &settings.FOV);
 				if (settings.FOV) {
-					ImGui::SliderFloat(XorStr("Aimbot FOV##slider").c_str(), &settings.AimbotFOV, 0.0f, 1000.0f, XorStr("%.2f").c_str());
+					ImGui::SliderFloat(_xor("Aimbot FOV##slider").c_str(), &settings.AimbotFOV, 0.0f, 1000.0f, _xor("%.2f").c_str());
 				}
-				string items[] = { XorStr("Chest").c_str(), XorStr("Neck").c_str(), XorStr("Head").c_str() };
-				ImGui::SliderFloat(XorStr("Camera FOV##slider").c_str(), &settings.CameraFOV, 40.0f, 120.0f, XorStr("%.2f").c_str());
+				string items[] = { _xor("Chest").c_str(), _xor("Neck").c_str(), _xor("Head").c_str() };
+				ImGui::SliderFloat(_xor("Camera FOV##slider").c_str(), &settings.CameraFOV, 40.0f, 120.0f, _xor("%.2f").c_str());
 
 				if (ImGui::BeginCombo("Aimbot Bone", settings.Aimbot.BoneName.c_str()))
 				{
@@ -601,9 +601,9 @@ namespace Render {
 						bool is_selected = (settings.Aimbot.BoneName == items[n]);
 						if (ImGui::Selectable(items[n].c_str(), is_selected))
 							settings.Aimbot.BoneName = items[n];
-							if (settings.Aimbot.BoneName == "Head")
+							if (settings.Aimbot.BoneName == _xor("Head").c_str())
 								AimbotBoneIndex = 66;
-							else if (settings.Aimbot.BoneName == "Neck")
+							else if (settings.Aimbot.BoneName == _xor("Neck").c_str())
 								AimbotBoneIndex = 65;
 							else
 								AimbotBoneIndex = 36;
@@ -614,25 +614,25 @@ namespace Render {
 				}
 			}
 			else if (tabb == 1) {
-				ImGui::Checkbox(XorStr("Player Lines").c_str(), &settings.ESP.PlayerLines);
+				ImGui::Checkbox(_xor("Player Lines").c_str(), &settings.ESP.PlayerLines);
 				if (settings.ESP.PlayerLines) {
 					ImGui::Spacing();
-					ImGui::Checkbox(XorStr("ToBots").c_str(), &settings.ESP.PlayerLineToBots);
+					ImGui::Checkbox(_xor("ToBots").c_str(), &settings.ESP.PlayerLineToBots);
 					ImGui::SameLine();
-					ImGui::Checkbox(XorStr("ToPlayers").c_str(), &settings.ESP.PlayerLineToPlayers);
+					ImGui::Checkbox(_xor("ToPlayers").c_str(), &settings.ESP.PlayerLineToPlayers);
 					ImGui::Spacing();
 				}
-				ImGui::Checkbox(XorStr("Bone ESP").c_str(), &settings.ESP.BoneESP);
-				ImGui::Checkbox(XorStr("Box ESP").c_str(), &settings.ESP.BoxEsp);
-				ImGui::Checkbox(XorStr("Players Around").c_str(), &settings.PlayersAround);
-				ImGui::Checkbox(XorStr("MarkBots").c_str(), &settings.MarkBots);
-				ImGui::ColorEdit4(XorStr("NotVisibleColor").c_str(), settings.NotVisibleColor, ImGuiColorEditFlags_NoInputs);
-				ImGui::ColorEdit4(XorStr("BotColor").c_str(), settings.BotColor, ImGuiColorEditFlags_NoInputs);
+				ImGui::Checkbox(_xor("Bone ESP").c_str(), &settings.ESP.BoneESP);
+				ImGui::Checkbox(_xor("Box ESP").c_str(), &settings.ESP.BoxEsp);
+				ImGui::Checkbox(_xor("Players Around").c_str(), &settings.PlayersAround);
+				ImGui::Checkbox(_xor("MarkBots").c_str(), &settings.MarkBots);
+				ImGui::ColorEdit4(_xor("NotVisibleColor").c_str(), settings.NotVisibleColor, ImGuiColorEditFlags_NoInputs);
+				ImGui::ColorEdit4(_xor("BotColor").c_str(), settings.BotColor, ImGuiColorEditFlags_NoInputs);
 			}
 			else if (tabb == 2) {
-				ImGui::Text(XorStr("Pitch: %f\n").c_str(), Pitch);
-				ImGui::Text(XorStr("Pawns: %u\n").c_str(), player_list_size);
-				ImGui::Text(XorStr("Trampoline: 0x%llx\n").c_str(), Offsets::trampoline);
+				ImGui::Text(_xor("Pitch: %f\n").c_str(), Pitch);
+				ImGui::Text(_xor("Pawns: %u\n").c_str(), player_list_size);
+				ImGui::Text(_xor("Trampoline: 0x%llx\n").c_str(), Offsets::trampoline);
 			}
 
 			ImGui::End();
@@ -698,7 +698,7 @@ namespace Render {
 
 			ImGui_ImplDX11_Init(targetWindow, device, immediateContext);
 			ImGuiIO& io = ImGui::GetIO(); (void)io;
-			ImFont* font = io.Fonts->AddFontFromFileTTF(XorStr("c:\\Windows\\Fonts\\Verdana.ttf").c_str(), 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+			ImFont* font = io.Fonts->AddFontFromFileTTF(_xor("c:\\Windows\\Fonts\\Verdana.ttf").c_str(), 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 			IM_ASSERT(font != NULL);
 			ImGui_ImplDX11_CreateDeviceObjects();
 
@@ -742,7 +742,7 @@ namespace Render {
 		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		sd.OutputWindow = FindWindowA(XorStr("UnrealWindow").c_str(), XorStr("Fortnite  ").c_str());
+		sd.OutputWindow = FindWindowA(_xor("UnrealWindow").c_str(), _xor("Fortnite  ").c_str());
 		sd.SampleDesc.Count = 1;
 		sd.Windowed = TRUE;
 

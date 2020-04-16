@@ -132,7 +132,7 @@ inline auto operator+(const _string_type& lhs, const _Basic_XorStr<_string_type,
 }
 //---------------------------------------------------------------------------
 template<size_t _length>
-constexpr ALWAYS_INLINE auto XorStr(char const (&str)[_length])
+constexpr ALWAYS_INLINE auto _xor(char const (&str)[_length])
 {
 	return XorStrA<_length>(str);
 }

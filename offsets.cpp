@@ -49,24 +49,24 @@ namespace Offsets {
 		FortUpdater* Updater = new FortUpdater();
 		if (Updater->Init(UObjectArray, GetObjectNamePtr, GetNameByIndexPtr, FnFreePtr))
 		{
-			Levels = Updater->FindOffset(XorStr("World").c_str(), XorStr("Levels").c_str());
-			OwningGameInstance = Updater->FindOffset(XorStr("World").c_str(), XorStr("OwningGameInstance").c_str());
+			Levels = Updater->FindOffset(_xor("World").c_str(), _xor("Levels").c_str());
+			OwningGameInstance = Updater->FindOffset(_xor("World").c_str(), _xor("OwningGameInstance").c_str());
 			
-			PlayerCameraManager = Updater->FindOffset(XorStr("PlayerController").c_str(), XorStr("PlayerCameraManager").c_str());
-			AcknowledgedPawn = Updater->FindOffset(XorStr("PlayerController").c_str(), XorStr("AcknowledgedPawn").c_str());
+			PlayerCameraManager = Updater->FindOffset(_xor("PlayerController").c_str(), _xor("PlayerCameraManager").c_str());
+			AcknowledgedPawn = Updater->FindOffset(_xor("PlayerController").c_str(), _xor("AcknowledgedPawn").c_str());
 			
-			LocalPlayers = Updater->FindOffset(XorStr("GameInstance").c_str(), XorStr("LocalPlayers").c_str());
-			PlayerController = Updater->FindOffset(XorStr("Player").c_str(), XorStr("PlayerController").c_str());
+			LocalPlayers = Updater->FindOffset(_xor("GameInstance").c_str(), _xor("LocalPlayers").c_str());
+			PlayerController = Updater->FindOffset(_xor("Player").c_str(), _xor("PlayerController").c_str());
 			
 			//Position shit
-			RootComponent = Updater->FindOffset(XorStr("Actor").c_str(), XorStr("RootComponent").c_str());
-			RelativeLocation = Updater->FindOffset(XorStr("SceneComponent").c_str(), XorStr("RelativeLocation").c_str());
+			RootComponent = Updater->FindOffset(_xor("Actor").c_str(), _xor("RootComponent").c_str());
+			RelativeLocation = Updater->FindOffset(_xor("SceneComponent").c_str(), _xor("RelativeLocation").c_str());
 			
-			SkeletalMeshComponent = Updater->FindOffset(XorStr("Character").c_str(), XorStr("Mesh").c_str());
+			SkeletalMeshComponent = Updater->FindOffset(_xor("Character").c_str(), _xor("Mesh").c_str());
 			
 			//Pawn
-			PlayerState = Updater->FindOffset(XorStr("Pawn").c_str(), XorStr("PlayerState").c_str());
-			TeamIndex = Updater->FindOffset(XorStr("FortPlayerStateAthena").c_str(), XorStr("TeamIndex").c_str());
+			PlayerState = Updater->FindOffset(_xor("Pawn").c_str(), _xor("PlayerState").c_str());
+			TeamIndex = Updater->FindOffset(_xor("FortPlayerStateAthena").c_str(), _xor("TeamIndex").c_str());
 
 			if (debug)
 			{
