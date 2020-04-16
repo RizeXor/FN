@@ -11,7 +11,7 @@ VOID CreateDebugConsole()
 }
 
 VOID Main() {
-	CreateDebugConsole();
+	//CreateDebugConsole();
 	
 	MH_Initialize();
 
@@ -94,8 +94,8 @@ VOID Main() {
 	if (!core::init())
 		return;
 
-	if (!Render::Initialize())
-		return;
+	/*if (!Render::Initialize())
+		return;*/
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
