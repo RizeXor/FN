@@ -43,7 +43,7 @@ namespace Offsets {
 			return FALSE;
 		}*/
 
-		bool debug = true;
+		bool debug = false;
 		//uWorld = reinterpret_cast<decltype(uWorld)>(RELATIVE_ADDR(addr, 7));
 
 		FortUpdater* Updater = new FortUpdater();

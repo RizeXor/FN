@@ -1,7 +1,7 @@
-#include "core.h"
 #include "utils.h"
 #include "offsets.h"
 #include "MinHook/include/MinHook.h"
+#include "stdafx.h"
 
 namespace core
 {
@@ -25,7 +25,8 @@ namespace core
 	INT GetViewPointHook(PVOID player, FMinimalViewInfo* viewInfo, BYTE stereoPass) {
 		auto ret = GetViewPoint(player, viewInfo, stereoPass);
 
-		auto fov = 100.0f;
+		auto fov = settings.CameraFOV;
+
 		/*auto desired = (((180.0f - upperFOV) / (180.0f - 80.0f)) * (Settings.FOV - 80.0f)) + upperFOV;
 
 		if (fov > upperFOV) {
@@ -44,7 +45,7 @@ namespace core
 
 	BOOLEAN init()
 	{
-		auto addr = Utils::FindPattern(
+		/*auto addr = Utils::FindPattern(
 			XorStr("\x40\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81\xEC\x00\x00\x00\x00\x48\x8D\x6C\x24\x00\x48\x89\x9D\x00\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC5\x48\x89\x85\x00\x00\x00\x00\x8B\x41\x0C\x45\x33\xF6\x3B\x05\x00\x00\x00\x00\x4D\x8B\xF8\x48\x8B\xF2\x4C\x8B\xE1\x41\xB8\x00\x00\x00\x00\x7D\x2A").c_str(), 
 			XorStr("xxxxxxxxxxxxxxx????xxxx?xxx????xxx????xxxxxx????xxxxxxxx????xxxxxxxxxxx????xx").c_str());
 		if (!addr) {
@@ -64,7 +65,7 @@ namespace core
 		}
 
 		MH_CreateHook(addr, GetViewPointHook, (PVOID*)&GetViewPoint);
-		MH_EnableHook(addr);
+		MH_EnableHook(addr);*/
 
 		return TRUE;
 	}

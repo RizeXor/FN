@@ -9,7 +9,8 @@ struct SETTINGS
 	bool FOV;
 	bool PlayersAround;
 	bool MarkBots;
-	float FOVSize;
+	float AimbotFOV;
+	float CameraFOV;
 	struct _Aimbot
 	{
 		std::string BoneName;

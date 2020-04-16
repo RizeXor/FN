@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <locale>
 
 template<class T>
 struct TArray

@@ -82,7 +82,7 @@ VOID Main() {
 	MH_CreateHook(&RegEnumKeyExA, RegEnumKeyExAHook, reinterpret_cast<PVOID*>(&RegEnumKeyExAOriginal));
 	MH_EnableHook(&RegEnumKeyExA);*/
 
-	if (!Utils::Initialize())
+	if (!utils::Initialize())
 		return;
 
 	if (!Offsets::Initialize())
@@ -94,8 +94,8 @@ VOID Main() {
 	if (!core::init())
 		return;
 
-	/*if (!Render::Initialize())
-		return;*/
+	if (!Render::Initialize())
+		return;
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {

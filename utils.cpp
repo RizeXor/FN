@@ -1,10 +1,15 @@
 #include "stdafx.h"
 
 #include <Psapi.h>
+#include <algorithm>
+#include <sstream>
+#include <string_view>
+#include <array>
+#include <vector>
 
 ULONGLONG GetBoneMatrixAddress = 0;
 
-namespace Utils {
+namespace utils {
 	const wchar_t* get_name(uint64_t object)
 	{
 		uint64_t base = (uint64_t)GetModuleHandleW(nullptr);
@@ -192,7 +197,7 @@ namespace Utils {
 
 	bool get_bone_matrix(uint64_t actor, unsigned int index, FVector* Out) {
 		uint64_t ActorMesh = 0;
-		FMatrix matrix;
+		FMatrix matrix = { 0 };
 		FMatrix* tmp = nullptr;
 
 		ActorMesh = *(ULONGLONG*)(actor + Offsets::SkeletalMeshComponent);
@@ -200,8 +205,9 @@ namespace Utils {
 			return false;
 		}
 
-		FMatrix* (__fastcall * func)(void*, void*, int) = (FMatrix * (__fastcall *)(void*, void*, int))GetBoneMatrixAddress;
-		tmp = func((void*)ActorMesh, (void*)&matrix, index);
+		FMatrix* (__fastcall * funcmatrix)(void*, void*, int) = (FMatrix * (__fastcall *)(void*, void*, int))GetBoneMatrixAddress;
+		//tmp = func((void*)ActorMesh, (void*)&matrix, index);
+		tmp = utils::spoof_call(Offsets::trampoline, funcmatrix, (void*)ActorMesh, (void*)&matrix, (int)index);
 
 		Out->x = matrix.WPlane.x;
 		Out->y = matrix.WPlane.y;
@@ -252,5 +258,44 @@ namespace Utils {
 		GetModuleInformation(GetCurrentProcess(), GetModuleHandle(0), &info, sizeof(info));
 
 		return FindPattern(info.lpBaseOfDll, info.SizeOfImage, pattern, mask);
+	}
+
+#define FIND_NT_HEADER(x) reinterpret_cast<PIMAGE_NT_HEADERS>( uint64_t(x) + reinterpret_cast<PIMAGE_DOS_HEADER>(x)->e_lfanew )
+
+	template <size_t N>
+	uint8_t* find_signature(const std::string_view module, const char(&signature)[N])
+	{
+		std::array<uint8_t, N> signature_bytes{ };
+
+		{
+			std::vector<std::string> signature_chunks{ };
+			std::string current_chunk{ };
+
+			std::istringstream string_stream{ signature };
+
+			while (std::getline(string_stream, current_chunk, ' '))
+				signature_chunks.push_back(current_chunk);
+
+			std::transform(signature_chunks.cbegin(), signature_chunks.cend(), signature_bytes.begin(), [](const std::string& val) -> uint8_t
+				{
+					return val.find('?') != std::string::npos ? 0ui8 : static_cast<uint8_t>(std::stoi(val, nullptr, 16));
+				});
+		}
+
+		uint8_t* found_bytes = nullptr;
+
+		{
+			const auto image_start = reinterpret_cast<uint8_t*>(GetModuleHandleA(module.data()));
+			const auto image_end = image_start + FIND_NT_HEADER(image_start)->OptionalHeader.SizeOfImage;
+
+			const auto result = std::search(image_start, image_end, signature_bytes.cbegin(), signature_bytes.cend(), [](uint8_t left, uint8_t right) -> bool
+				{
+					return right == 0ui8 || left == right;
+				});
+
+			found_bytes = (result != image_end) ? result : nullptr;
+		}
+
+		return found_bytes;
 	}
 }

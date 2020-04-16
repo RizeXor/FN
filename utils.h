@@ -13,10 +13,14 @@
 #define ReadDWORD(base, offset) (*(PDWORD)(((PBYTE)base + offset)))
 #define ReadBYTE(base, offset) (*(((PBYTE)base + offset)))
     
-namespace Utils {
+namespace utils {
 	BOOLEAN Initialize();
 
 	bool get_bone_matrix(uint64_t actor, unsigned int index, FVector* Out);
+	
+	template <size_t N>
+	uint8_t* find_signature(const std::string_view module, const char(&signature)[ N ]);
+	
 	FVector2D w2s(FVector Location, FMinimalViewInfo info);
 	bool get_aim_angles(FRotator cam_rotation, FVector cam_location, uint64_t aactor, int bone, FRotator* out);
 	bool LoadStyle();

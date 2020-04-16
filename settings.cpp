@@ -11,13 +11,14 @@ namespace Settings {
 		settings.ESP.BoxEsp = true;
 		settings.ESP.PlayerLines = false;
 		settings.MarkBots = true;
+		settings.CameraFOV = 90.0f;
 
 		settings.Aimbot.BoneName = "Chest";
 
 		settings.ESP.PlayerLineToBots = true;
 		settings.ESP.PlayerLineToPlayers = true;
 		
-		settings.FOVSize = 250.0f;
+		settings.AimbotFOV = 250.0f;
 
 		settings.NotVisibleColor[0] = 0.0f;
 		settings.NotVisibleColor[1] = 0.0f;
