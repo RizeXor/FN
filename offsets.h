@@ -3,13 +3,13 @@
 #include <Windows.h>
 
 namespace Offsets {
-	extern PVOID* uWorld;
+	extern PVOID trampoline;
+
 	extern DWORD UWorld;
 	extern DWORD FnFree;
 	extern DWORD GetObjectName;
 	extern DWORD CameraDecrypt;
 	extern DWORD UObject;
-	extern DWORD DecryptFunc;
 	extern DWORD GetBoneMatrix;
 	extern DWORD GetNameByIndex;
 	extern DWORD ClientSetRotation;

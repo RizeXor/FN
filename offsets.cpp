@@ -1,16 +1,18 @@
 ﻿#include "stdafx.h"
 
 namespace Offsets {
-	PVOID* uWorld = 0;
+	PVOID trampoline = 0;
+
+	//Only update
 	DWORD UWorld = 0x80A70A8;
 	DWORD FnFree = 0x2AE0550;
 	DWORD GetObjectName = 0x4196C20;
-	DWORD CameraDecrypt = 0x660;
-	DWORD UObject = 0x7FB6780;
-	DWORD DecryptFunc = 0x1FD26B0;
-	DWORD GetBoneMatrix = 0x4017A70;
-	DWORD ClientSetRotation = 0x628;
 	DWORD GetNameByIndex = 0x2BE2B50;
+	DWORD UObject = 0x7FB6780;
+	DWORD GetBoneMatrix = 0x4017A70;
+
+	DWORD CameraDecrypt = 0x660;
+	DWORD ClientSetRotation = 0x628;
 	
 	DWORD OwningGameInstance = 0;
 	DWORD LocalPlayers = 0;
