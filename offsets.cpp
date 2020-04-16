@@ -4,12 +4,12 @@ namespace Offsets {
 	PVOID trampoline = 0;
 
 	//Only update
-	DWORD UWorld = 0x80A70A8;
-	DWORD FnFree = 0x2AE0550;
-	DWORD GetObjectName = 0x4196C20;
-	DWORD GetNameByIndex = 0x2BE2B50;
-	DWORD UObject = 0x7FB6780;
-	DWORD GetBoneMatrix = 0x4017A70;
+	DWORD UWorld = 0x8140D68;
+	DWORD FnFree = 0x2B273C0;
+	DWORD GetObjectName = 0x41E3470;
+	DWORD UObject = 0x8050438;
+	DWORD GetNameByIndex = 0x2C23050;
+	DWORD GetBoneMatrix = 0x4065E60;
 
 	DWORD CameraDecrypt = 0x660;
 	DWORD ClientSetRotation = 0x628;
