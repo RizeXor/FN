@@ -311,13 +311,18 @@ void player_loop(ImGuiWindow& window)
 			auto dy = abs(chest_pos_2d.y - 540.0f);
 			auto dist = utils::spoof_call(Offsets::trampoline, sqrtf, dx * dx + dy * dy);
 
-			RenderText(&window, to_string((int)dist), ImVec2(chest_pos_2d.x, chest_pos_2d.y - 10.0f), 12.0f, 0xFFFF0000, true);
+			//RenderText(&window, to_string((int)dist), ImVec2(chest_pos_2d.x, chest_pos_2d.y - 10.0f), 12.0f, 0xFFFF0000, true);
 
 			if ( dist < closest_dist && dist <= settings.AimbotFOV ) {
 				closest_dist = dist;
 				closest_pawn = player.aactor;
 			}
 
+		}
+
+		if (settings.ESP.PlayerLines)
+		{
+			window.DrawList->AddLine(ImVec2(960, 540), ImVec2(chest_pos_2d.x, chest_pos_2d.y), ImGui::GetColorU32({ 1, 0, 0, 0.5 }), 1.0f);
 		}
 	}
 
@@ -333,8 +338,7 @@ void player_loop(ImGuiWindow& window)
 
 		FVector2D target_pawn_2d = utils::w2s(targget_pawn_loc, myinfo);
 
-		window.DrawList->AddLine(ImVec2(960, 1080 / 2), ImVec2(target_pawn_2d.x, target_pawn_2d.y),
-			ImGui::GetColorU32({ 1, 0, 0, 1 }), 3.0f);
+		window.DrawList->AddLine(ImVec2(960, 1080 / 2), ImVec2(target_pawn_2d.x, target_pawn_2d.y), ImGui::GetColorU32({ 1, 0, 0, 1 }), 3.0f);
 	}
 
 	bool pressed = utils::spoof_call(Offsets::trampoline, GetAsyncKeyState, VK_RBUTTON) < 0;
@@ -594,7 +598,8 @@ namespace Render {
 				string items[] = { _xor("Chest").c_str(), _xor("Neck").c_str(), _xor("Head").c_str() };
 
 				ImGui::Checkbox(_xor("FOVChanger").c_str(), &settings.FOVChanger);
-				if(settings.CameraFOV)
+
+				if(settings.FOVChanger)
 					ImGui::SliderFloat(_xor("Camera FOV##slider").c_str(), &settings.CameraFOV, 40.0f, 120.0f, _xor("%.2f").c_str());
 
 				if (ImGui::BeginCombo("Aimbot Bone", settings.Aimbot.BoneName.c_str()))
