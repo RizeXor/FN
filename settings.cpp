@@ -11,7 +11,9 @@ namespace Settings {
 		settings.ESP.BoxEsp = true;
 		settings.ESP.PlayerLines = false;
 		settings.MarkBots = true;
+
 		settings.CameraFOV = 90.0f;
+		settings.FOVChanger = false;
 
 		settings.Aimbot.BoneName = "Chest";
 

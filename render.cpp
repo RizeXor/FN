@@ -592,7 +592,10 @@ namespace Render {
 					ImGui::SliderFloat(_xor("Aimbot FOV##slider").c_str(), &settings.AimbotFOV, 0.0f, 1000.0f, _xor("%.2f").c_str());
 				}
 				string items[] = { _xor("Chest").c_str(), _xor("Neck").c_str(), _xor("Head").c_str() };
-				ImGui::SliderFloat(_xor("Camera FOV##slider").c_str(), &settings.CameraFOV, 40.0f, 120.0f, _xor("%.2f").c_str());
+
+				ImGui::Checkbox(_xor("FOVChanger").c_str(), &settings.FOVChanger);
+				if(settings.CameraFOV)
+					ImGui::SliderFloat(_xor("Camera FOV##slider").c_str(), &settings.CameraFOV, 40.0f, 120.0f, _xor("%.2f").c_str());
 
 				if (ImGui::BeginCombo("Aimbot Bone", settings.Aimbot.BoneName.c_str()))
 				{
@@ -675,7 +678,7 @@ namespace Render {
 			D3D11_TEXTURE2D_DESC backBufferDesc = { 0 };
 			backBuffer->GetDesc(&backBufferDesc);
 
-			hWnd = FindWindow(XorStr(L"UnrealWindow").c_str(), XorStr(L"Fortnite  ").c_str());
+			hWnd = FindWindow(_xor(L"UnrealWindow").c_str(), _xor(L"Fortnite  ").c_str());
 			if (!width) {
 				WndProcOriginal = reinterpret_cast<WNDPROC>(SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProcHook)));
 			}
@@ -747,7 +750,7 @@ namespace Render {
 		sd.Windowed = TRUE;
 
 		if (FAILED(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, 0, &featureLevel, 1, D3D11_SDK_VERSION, &sd, &swapChain, &device, nullptr, &context))) {
-			MessageBox(0, XorStr(L"Failed to create D3D11 device and swap chain").c_str(), XorStr(L"Failure").c_str(), MB_ICONERROR);
+			MessageBox(0, _xor(L"Failed to create D3D11 device and swap chain").c_str(), _xor(L"Failure").c_str(), MB_ICONERROR);
 			return FALSE;
 		}
 

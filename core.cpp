@@ -25,19 +25,11 @@ namespace core
 	INT GetViewPointHook(PVOID player, FMinimalViewInfo* viewInfo, BYTE stereoPass) {
 		auto ret = GetViewPoint(player, viewInfo, stereoPass);
 
-		auto fov = settings.CameraFOV;
-
-		/*auto desired = (((180.0f - upperFOV) / (180.0f - 80.0f)) * (Settings.FOV - 80.0f)) + upperFOV;
-
-		if (fov > upperFOV) {
-			fov = desired;
+		if (settings.FOVChanger)
+		{
+			auto fov = settings.CameraFOV;
+			viewInfo->FOV = fov;
 		}
-		else if (fov > lowerFOV) {
-			fov = (((fov - lowerFOV) / (upperFOV - lowerFOV)) * (desired - lowerFOV)) + lowerFOV;
-		}*/
-
-		// Do whatever you want with viewInfo to change the camera location 
-		viewInfo->FOV = fov;
 
 		return ret;
 	}
@@ -54,18 +46,18 @@ namespace core
 		}
 
 		MH_CreateHook(addr, ProcessEventHook, (PVOID*)&ProcessEvent);
-		MH_EnableHook(addr);
+		MH_EnableHook(addr);*/
 
-		addr = Utils::FindPattern(
-			XorStr("\x48\x89\x5C\x24\x00\x48\x89\x74\x24\x00\x57\x48\x83\xEC\x20\x48\x8B\xD9\x41\x8B\xF0\x48\x8B\x49\x30\x48\x8B\xFA\xE8\x00\x00\x00\x00\xBA\x00\x00\x00\x00\x48\x8B\xC8").c_str(), 
-			XorStr("xxxx?xxxx?xxxxxxxxxxxxxxxxxxx????x????xxx").c_str());
+		auto addr = utils::FindPattern(
+			_xor("\x48\x89\x5C\x24\x00\x48\x89\x74\x24\x00\x57\x48\x83\xEC\x20\x48\x8B\xD9\x41\x8B\xF0\x48\x8B\x49\x30\x48\x8B\xFA\xE8\x00\x00\x00\x00\xBA\x00\x00\x00\x00\x48\x8B\xC8").c_str(), 
+			_xor("xxxx?xxxx?xxxxxxxxxxxxxxxxxxx????x????xxx").c_str());
 		if (!addr) {
-			MessageBox(0, XorStr(L"Failed to find CalculateShot").c_str(), XorStr(L"Failure").c_str(), 0);
+			MessageBox(0, _xor(L"Failed to find CalculateShot").c_str(), _xor(L"Failure").c_str(), 0);
 			return FALSE;
 		}
 
 		MH_CreateHook(addr, GetViewPointHook, (PVOID*)&GetViewPoint);
-		MH_EnableHook(addr);*/
+		MH_EnableHook(addr);
 
 		return TRUE;
 	}

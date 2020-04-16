@@ -138,19 +138,19 @@ constexpr ALWAYS_INLINE auto _xor(char const (&str)[_length])
 }
 //---------------------------------------------------------------------------
 template<size_t _length>
-constexpr ALWAYS_INLINE auto XorStr(wchar_t const (&str)[_length])
+constexpr ALWAYS_INLINE auto _xor(wchar_t const (&str)[_length])
 {
 	return XorStrW<_length>(str);
 }
 //---------------------------------------------------------------------------
 template<size_t _length>
-constexpr ALWAYS_INLINE auto XorStr(char16_t const (&str)[_length])
+constexpr ALWAYS_INLINE auto _xor(char16_t const (&str)[_length])
 {
 	return XorStrU16<_length>(str);
 }
 //---------------------------------------------------------------------------
 template<size_t _length>
-constexpr ALWAYS_INLINE auto XorStr(char32_t const (&str)[_length])
+constexpr ALWAYS_INLINE auto _xor(char32_t const (&str)[_length])
 {
 	return XorStrU32<_length>(str);
 }
