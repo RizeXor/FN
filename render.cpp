@@ -365,9 +365,9 @@ void player_loop(ImGuiWindow& window)
 	}
 
 	//debug aimbot
-	/*char aimbot_buf[120] = { 0 };
-	sprintf_s(aimbot_buf, sizeof(aimbot_buf), XorStr("(tp) 0x%llx, (cp) 0x%llx, (press) %d, (dist): %d").c_str(), target_pawn, closest_pawn, pressed, (int)closest_dist);
-	RenderText(&window, aimbot_buf, ImVec2(960, 400), 18.0f, 0xFFFF0000, true);*/
+	char aimbot_buf[120] = { 0 };
+	sprintf_s(aimbot_buf, sizeof(aimbot_buf), _xor("(tp) 0x%llx, (cp) 0x%llx, (press) %d, (dist): %d").c_str(), target_pawn, closest_pawn, pressed, (int)closest_dist);
+	RenderText(&window, aimbot_buf, ImVec2(960, 400), 18.0f, 0xFFFF0000, true);
 }
 
 void update_pointers(ImGuiWindow& window)
