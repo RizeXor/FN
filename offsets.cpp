@@ -4,16 +4,16 @@ namespace Offsets {
 	PVOID trampoline = 0;
 
 	//Only update
-	DWORD UWorld = 0x8140D68;
-	DWORD FnFree = 0x2B273C0;
-	DWORD GetObjectName = 0x41E3470;
-	DWORD UObject = 0x8050438;
-	DWORD GetNameByIndex = 0x2C23050;
-	DWORD GetBoneMatrix = 0x4065E60;
+	DWORD UWorld = 0x8141D18;
+	DWORD FnFree = 0x2B273B0;
+	DWORD GetObjectName = 0x41E3460;
+	DWORD UObject = 0x8051450;
+	DWORD GetNameByIndex = 0x2C23040;
+	DWORD GetBoneMatrix = 0x4065E50;
 
 	DWORD CameraDecrypt = 0x660;
 	DWORD ClientSetRotation = 0x628;
-	
+
 	DWORD OwningGameInstance = 0;
 	DWORD LocalPlayers = 0;
 	DWORD AActors = 0;
@@ -51,19 +51,19 @@ namespace Offsets {
 		{
 			Levels = Updater->FindOffset(_xor("World").c_str(), _xor("Levels").c_str());
 			OwningGameInstance = Updater->FindOffset(_xor("World").c_str(), _xor("OwningGameInstance").c_str());
-			
+
 			PlayerCameraManager = Updater->FindOffset(_xor("PlayerController").c_str(), _xor("PlayerCameraManager").c_str());
 			AcknowledgedPawn = Updater->FindOffset(_xor("PlayerController").c_str(), _xor("AcknowledgedPawn").c_str());
-			
+
 			LocalPlayers = Updater->FindOffset(_xor("GameInstance").c_str(), _xor("LocalPlayers").c_str());
 			PlayerController = Updater->FindOffset(_xor("Player").c_str(), _xor("PlayerController").c_str());
-			
+
 			//Position shit
 			RootComponent = Updater->FindOffset(_xor("Actor").c_str(), _xor("RootComponent").c_str());
 			RelativeLocation = Updater->FindOffset(_xor("SceneComponent").c_str(), _xor("RelativeLocation").c_str());
-			
+
 			SkeletalMeshComponent = Updater->FindOffset(_xor("Character").c_str(), _xor("Mesh").c_str());
-			
+
 			//Pawn
 			PlayerState = Updater->FindOffset(_xor("Pawn").c_str(), _xor("PlayerState").c_str());
 			TeamIndex = Updater->FindOffset(_xor("FortPlayerStateAthena").c_str(), _xor("TeamIndex").c_str());
