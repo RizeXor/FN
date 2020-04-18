@@ -170,7 +170,7 @@ void draw_player_warning(ImGuiWindow& window, bool lobby)
 	RenderText(&window, player_warning_buffer, ImVec2(960, 90), 22.0f, 0xFFFF0000, true);
 }
 
-void player_loop(ImGuiWindow& window)
+void player_loop(ImGuiWindow& window, int ti)
 {
 	int pl = 0;
 
@@ -182,6 +182,16 @@ void player_loop(ImGuiWindow& window)
 	for (pl = 0; pl < player_list_size; pl++)
 	{
 		struct players player = player_list[pl];
+
+		uint64_t playerstate = *(uint64_t*)(player.aactor + Offsets::PlayerState);
+
+		if (!valid_pointer(playerstate))
+			continue;
+
+		int eti = *(int*)(playerstate + Offsets::TeamIndex);
+
+		if (eti == ti)
+			continue;
 
 		FVector head_pos;
 		if (!utils::get_bone_matrix(player.aactor, 66, &head_pos))
@@ -481,6 +491,16 @@ void update_pointers(ImGuiWindow& window)
 		return;
 	}
 
+	uint64_t playerstate = *(uint64_t*)(acknowledged_pawn + Offsets::PlayerState);
+
+	if (!valid_pointer(playerstate))
+	{
+		// cout ps not valid
+		return;
+	}
+
+	int ti = *(int*)(playerstate + Offsets::TeamIndex);
+
 	//Do aimbot
 	for (size_t i = 0; i < actor_count; i++)
 	{
@@ -513,7 +533,7 @@ void update_pointers(ImGuiWindow& window)
 		}
 	}
 
-	player_loop(window);
+	player_loop(window, ti);
 	draw_player_warning(window, false);
 }
 
